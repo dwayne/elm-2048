@@ -1,4 +1,4 @@
-module Game exposing (main, moveLeft)
+module Game exposing (main, moveLeft, moveRight)
 
 import Dict
 import Html exposing (..)
@@ -158,6 +158,44 @@ moveLeft tiles =
                 move (farthest + 1) (Just { tile | col = farthest }) (prev :: accum) rest
   in
     move 0 Nothing [] tiles
+
+-- Takes a list of tiles, that are in the same row, ordered from right to left
+-- and moves them to the farthest right position they can move. If adjacent tiles
+-- have the same value then they are merged (at most once).
+--
+-- Examples:
+--
+-- moveRight [ { row = 0, col = 2, value = 4 }, { row = 0, col = 0, value = 2 } ]
+-- => [ { row = 0, col = 2, value = 2 }, { row = 0, col = 3, value = 4 } ]
+--
+-- moveRight [ { row = 0, col = 2, value = 2 }, { row = 0, col = 0, value = 2 } ]
+-- => [ { row = 0, col = 3, value = 4 } ]
+moveRight : List Tile -> List Tile
+moveRight tiles =
+  let
+    move : Int -> Maybe Tile -> List Tile -> List Tile -> List Tile
+    move farthest prev accum tiles =
+      case tiles of
+        [] ->
+          case prev of
+            Nothing ->
+              accum
+
+            Just prev ->
+              prev :: accum
+
+        (tile :: rest) ->
+          case prev of
+            Nothing ->
+              move (farthest - 1) (Just { tile | col = farthest }) accum rest
+
+            Just prev ->
+              if prev.value == tile.value then
+                move farthest Nothing ({ prev | value = 2 * prev.value } :: accum) rest
+              else
+                move (farthest - 1) (Just { tile | col = farthest }) (prev :: accum) rest
+  in
+    move (cellCount - 1) Nothing [] tiles
 
 type alias TileInfo =
   { color : String

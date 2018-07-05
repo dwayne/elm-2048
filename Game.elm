@@ -1,4 +1,4 @@
-module Game exposing (main, moveLeft, moveRight)
+module Game exposing (main, moveUp, moveLeft, moveRight)
 
 import Dict
 import Html exposing (..)
@@ -120,6 +120,44 @@ viewCell row col =
       []
 
 -- TILE
+
+-- Takes a list of tiles, that are in the same column, ordered from top to
+-- bottom and moves them to the topmost position they can move. If adjacent
+-- tiles have the same value then they are merged (at most once).
+--
+-- Examples:
+--
+-- moveUp [ { row = 1, col = 0, value = 2 }, { row = 3, col = 0, value = 4 } ]
+-- => [ { row = 1, col = 0, value = 4 }, { row = 0, col = 0, value = 2 } ]
+--
+-- moveUp [ { row = 1, col = 0, value = 2 }, { row = 3, col = 0, value = 2 } ]
+-- => [ { row = 0, col = 0, value = 4 } ]
+moveUp : List Tile -> List Tile
+moveUp tiles =
+  let
+    move : Int -> Maybe Tile -> List Tile -> List Tile -> List Tile
+    move farthest prev accum tiles =
+      case tiles of
+        [] ->
+          case prev of
+            Nothing ->
+              accum
+
+            Just prev ->
+              prev :: accum
+
+        (tile :: rest) ->
+          case prev of
+            Nothing ->
+              move (farthest + 1) (Just { tile | row = farthest }) accum rest
+
+            Just prev ->
+              if prev.value == tile.value then
+                move farthest Nothing ({ prev | value = 2 * prev.value } :: accum) rest
+              else
+                move (farthest + 1) (Just { tile | row = farthest }) (prev :: accum) rest
+  in
+    move 0 Nothing [] tiles
 
 -- Takes a list of tiles, that are in the same row, ordered from left to right
 -- and moves them to the farthest left position they can move. If adjacent tiles

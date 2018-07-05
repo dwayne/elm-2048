@@ -146,29 +146,33 @@ viewCell row col =
 groupByRowLR : List Tile -> List (List Tile)
 groupByRowLR tiles =
   let
-    initial : Array (List Tile)
-    initial =
-      Array.repeat cellCount []
-
-    insert : Tile -> List Tile -> List Tile
-    insert tile tiles =
-      case tiles of
-        [] ->
-          [ tile ]
-
-        (first :: rest) ->
-          if tile.col < first.col then
-            tile :: tiles
-          else
-            first :: insert tile rest
-
     combine : Tile -> Array (List Tile) -> Array (List Tile)
     combine tile groups =
-      updateGroup tile.row (insert tile) groups
+      updateGroup tile.row (insertIntoGroup (lessThan .col) tile) groups
   in
     tiles
-      |> List.foldl combine initial
+      |> List.foldl combine initialGroups
       |> Array.toList
+
+lessThan : (a -> comparable) -> a -> a -> Bool
+lessThan f a b =
+  f a < f b
+
+initialGroups : Array (List a)
+initialGroups =
+  Array.repeat cellCount []
+
+insertIntoGroup : (a -> a -> Bool) -> a -> List a -> List a
+insertIntoGroup lessThan x list =
+  case list of
+    [] ->
+      [ x ]
+
+    (first :: rest) ->
+      if lessThan x first then
+        x :: list
+      else
+        first :: insertIntoGroup lessThan x rest
 
 updateGroup : Int -> (List a -> List a) -> Array (List a) -> Array (List a)
 updateGroup index update groups =

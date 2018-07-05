@@ -1,6 +1,5 @@
 module Game exposing (main, groupByRowLR, moveUp, moveDown, moveLeft, moveRight)
 
-import Array exposing (Array)
 import Dict
 import Html exposing (..)
 import Svg exposing (Svg)
@@ -123,14 +122,13 @@ viewCell row col =
 -- TILE
 
 -- Takes a list of tiles, in any order, that make up the grid and groups them
--- by row such that each row is ordered from left to right. The rows are
--- returned in order from top to bottom and if any row didn't have a tile then
--- that row is simply returned as an empty list.
+-- by row from top to bottom such that each row is ordered from left to right.
+-- If a row doesn't have any tiles then nothing is returned for that row.
 --
 -- Examples:
 --
 -- groupByRowLR []
--- => [[], [], [], []]
+-- => []
 --
 -- groupByRowLR
 --   [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
@@ -139,51 +137,55 @@ viewCell row col =
 --   ]
 -- =>
 -- [ [ { row = 0, col = 1, value = 2 }, { row = 0, col = 3, value = 4 } ]
--- , []
 -- , [ { row = 2, col = 0, value = 2 }, { row = 2, col = 1, value = 16 } ]
 -- , [ { row = 3, col = 2, value = 4 }, { row = 3, col = 3, value = 32 } ]
 -- ]
+--
+-- Notice how row = 1 is missing since it had no tiles in it.
 groupByRowLR : List Tile -> List (List Tile)
 groupByRowLR tiles =
   let
-    combine : Tile -> Array (List Tile) -> Array (List Tile)
-    combine tile groups =
-      updateGroup tile.row (insertIntoGroup (lessThan .col) tile) groups
+    -- Bottom to top, right to left
+    btrl : Tile -> Tile -> Order
+    btrl tile1 tile2 =
+      case compare tile1.row tile2.row of
+        EQ ->
+          compare tile2.col tile1.col
+
+        LT ->
+          GT
+
+        GT ->
+          LT
   in
     tiles
-      |> List.foldl combine initialGroups
-      |> Array.toList
+      |> List.sortWith btrl
+      |> groupByRow
 
-lessThan : (a -> comparable) -> a -> a -> Bool
-lessThan f a b =
-  f a < f b
-
-initialGroups : Array (List a)
-initialGroups =
-  Array.repeat cellCount []
-
-insertIntoGroup : (a -> a -> Bool) -> a -> List a -> List a
-insertIntoGroup lessThan x list =
-  case list of
-    [] ->
-      [ x ]
-
-    (first :: rest) ->
-      if lessThan x first then
-        x :: list
-      else
-        first :: insertIntoGroup lessThan x rest
-
-updateGroup : Int -> (List a -> List a) -> Array (List a) -> Array (List a)
-updateGroup index update groups =
+groupByRow : List Tile -> List (List Tile)
+groupByRow tiles =
   let
-    group =
-      groups
-        |> Array.get index
-        |> Maybe.map update
-        |> Maybe.withDefault []
+    iter : List Tile -> List (List Tile) -> List Tile -> List (List Tile)
+    iter group groups tiles =
+      case tiles of
+        [] ->
+          if List.isEmpty group then
+            groups
+          else
+            group :: groups
+
+        (first :: rest) ->
+          case group of
+            [] ->
+              iter [ first ] groups rest
+
+            (tile :: _) ->
+              if first.row == tile.row then
+                iter (first :: group) groups rest
+              else
+                iter [ first ] (group :: groups) rest
   in
-    Array.set index group groups
+    iter [] [] tiles
 
 -- Takes a list of tiles, that are in the same column, ordered from top to
 -- bottom and moves them to the topmost position they can move. If adjacent

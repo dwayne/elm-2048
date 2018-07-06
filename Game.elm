@@ -1,4 +1,4 @@
-module Game exposing (main, groupByRowLR, moveUp, moveDown, moveLeft, moveRight)
+module Game exposing (main, groupByRowLR, groupByRowRL, moveUp, moveDown, moveLeft, moveRight)
 
 import Dict
 import Html exposing (..)
@@ -160,6 +160,51 @@ groupByRowLR tiles =
   in
     tiles
       |> List.sortWith btrl
+      |> groupByRow
+
+-- Takes a list of tiles, in any order, that make up the grid and groups them
+-- by row from bottom to top such that each row is ordered from right to left.
+-- If a row doesn't have any tiles then nothing is returned for that row.
+--
+-- Examples:
+--
+-- groupByRowRL []
+-- => []
+--
+-- groupByRowRL
+--   [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
+--   , { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 }
+--   , { row = 0, col = 3, value = 4 }, { row = 3, col = 2, value = 4 }
+--   ]
+-- =>
+-- [ [ { row = 3, col = 3, value = 32 }, { row = 3, col = 2, value = 4 } ]
+-- , [ { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 } ]
+-- , [ { row = 0, col = 3, value = 4 }, { row = 0, col = 1, value = 2 } ]
+-- ]
+--
+-- Notice how row = 1 is missing since it had no tiles in it. Also, this one
+-- returns the rows bottom to top but it doesn't matter in the end. We can do
+-- a List.reverse to get it top to bottom if it does become necessary. All that
+-- matters is that we have the rows grouped and within a group they are in the
+-- correct order.
+groupByRowRL : List Tile -> List (List Tile)
+groupByRowRL tiles =
+  let
+    -- Top to bottom, left to right
+    tblr : Tile -> Tile -> Order
+    tblr tile1 tile2 =
+      case compare tile1.row tile2.row of
+        EQ ->
+          compare tile1.col tile2.col
+
+        LT ->
+          LT
+
+        GT ->
+          GT
+  in
+    tiles
+      |> List.sortWith tblr
       |> groupByRow
 
 groupByRow : List Tile -> List (List Tile)

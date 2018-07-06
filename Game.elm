@@ -1,7 +1,8 @@
-module Game exposing (main, groupByRowLR, groupByRowRL, groupByColTB, groupByColBT, moveUp, moveDown, moveLeft, moveRight)
+module Game exposing (main, valueGen, oneTileGen, twoTileGen, availableCells, groupByRowLR, groupByRowRL, groupByColTB, groupByColBT, moveUp, moveDown, moveLeft, moveRight)
 
 import Dict
 import Html exposing (..)
+import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes
 
@@ -132,6 +133,32 @@ viewCell row col =
       ]
       []
 
+-- Determines all the available cell positions.
+--
+-- For e.g.
+--
+-- availableCells
+--   [ { row = 0, col = 1, value = 4 }, { row = 2, col = 3, value = 16 } ]
+-- =>
+-- [ (0, 0), (0, 2), (0, 3)
+-- , (1, 0), (1, 1), (1, 2), (1, 3)
+-- , (2, 0), (2, 1), (2, 2)
+-- , (3, 0), (3, 1), (3, 2), (3, 3)
+-- ]
+availableCells : List Tile -> List (Int, Int)
+availableCells tiles =
+  let
+    allPositions =
+      cartesianMap cellCount cellCount (,)
+  in
+    List.filter
+      (\(row, col) ->
+        List.all
+          (\tile -> tile.row /= row || tile.col /= col)
+          tiles
+      )
+      allPositions
+
 type Direction
   = Up
   | Down
@@ -226,6 +253,53 @@ move dir tiles =
           |> combine
 
 -- TILE
+
+-- Generate tile values such that a 2 is generated with probability 90% and a
+-- 4 is generated with probability 10%.
+valueGen : Generator Int
+valueGen =
+  Random.map (\x -> if x < 0.9 then 2 else 4) (Random.float 0 1)
+
+-- Generate one tile in an available position.
+--
+-- N.B. It assumes that at least one position is available.
+oneTileGen : List Tile -> Generator Tile
+oneTileGen tiles =
+  let
+    get : Int -> List (Int, Int) -> (Int, Int)
+    get index list =
+      list
+        |> List.drop index
+        |> List.head
+        |> Maybe.withDefault (0, 0)
+
+    possibilities =
+      availableCells tiles
+
+    maxIndex =
+      List.length possibilities - 1
+  in
+    Random.pair (Random.int 0 maxIndex) valueGen
+      |> Random.map
+        (\(index, value) ->
+          let
+            (row, col) =
+              get index possibilities
+          in
+            { row = row, col = col, value = value }
+        )
+
+-- Generate two tiles in available positions.
+--
+-- N.B.: It assumes that at least two positions are available.
+twoTileGen : List Tile -> Generator (Tile, Tile)
+twoTileGen tiles =
+  oneTileGen tiles
+    |> Random.andThen
+      (\tile ->
+        oneTileGen (tile :: tiles)
+          |> Random.map ((,) tile)
+      )
 
 -- Takes a list of tiles, in any order, that make up the grid and groups them
 -- by row from top to bottom such that each row is ordered from left to right.

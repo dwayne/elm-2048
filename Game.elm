@@ -22,22 +22,35 @@ type alias Tile =
   , value : Int
   }
 
+tiles : List Tile
+tiles =
+  [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
+  , { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 }
+  , { row = 0, col = 3, value = 4 }, { row = 3, col = 2, value = 4 }
+  ]
+
+tilesU : List Tile
+tilesU =
+  move Up tiles
+
+tilesUR : List Tile
+tilesUR =
+  move Right tilesU
+
+tilesL : List Tile
+tilesL =
+  move Left tiles
+
+tilesLD : List Tile
+tilesLD =
+  move Down tilesL
+
 model : Model
 model =
   { score = 0
-  , tiles =
-      [ { row = 0, col = 0, value = 2 }
-      , { row = 0, col = 1, value = 4 }
-      , { row = 0, col = 2, value = 8 }
-      , { row = 0, col = 3, value = 16 }
-      , { row = 1, col = 0, value = 32 }
-      , { row = 1, col = 1, value = 64 }
-      , { row = 1, col = 2, value = 128 }
-      , { row = 1, col = 3, value = 256 }
-      , { row = 2, col = 0, value = 512 }
-      , { row = 2, col = 1, value = 1024 }
-      , { row = 2, col = 2, value = 2048 }
-      ]
+    -- Put one of tiles, tilesU, tilesUR, tilesL, or tilesLD here to see how
+    -- move works.
+  , tiles = tilesLD
   }
 
 -- VIEW
@@ -118,6 +131,77 @@ viewCell row col =
       , Svg.Attributes.height size
       ]
       []
+
+type Direction
+  = Up
+  | Down
+  | Left
+  | Right
+
+-- Takes a list of tiles, in any order, and moves them in the given direction.
+--
+-- Examples:
+--
+-- tiles =
+--   [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
+--   , { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 }
+--   , { row = 0, col = 3, value = 4 }, { row = 3, col = 2, value = 4 }
+--   ]
+--
+-- tilesU = move Up tiles
+-- =>
+-- [ { row = 0, col = 0, value = 2 }, { row = 0, col = 1, value = 2 }
+-- , { row = 0, col = 2, value = 4 }, { row = 0, col = 3, value = 4 }
+-- , { row = 1, col = 1, value = 16 }, { row = 1, col = 3, value = 32 }
+-- ]
+--
+-- tilesUR = move Right tilesU
+-- =>
+-- [ { row = 0, col = 2, value = 4 }, { row = 0, col = 3, value = 8 }
+-- , { row = 1, col = 2, value = 16 }, { row = 1, col = 3, value = 32 }
+-- ]
+--
+-- tilesL = move Left tiles
+-- =>
+-- [ { row = 0, col = 0, value = 2 }, { row = 0, col = 1, value = 4 }
+-- , { row = 2, col = 0, value = 2 }, { row = 2, col = 1, value = 16 }
+-- , { row = 3, col = 0, value = 4 }, { row = 3, col = 1, value = 32 }
+-- ]
+--
+-- tilesLD = move Down tilesL
+-- =>
+-- [ { row = 1, col = 1, value = 4 },
+-- , { row = 2, col = 0, value = 4 }, { row = 2, col = 1, value = 16 }
+-- , { row = 3, col = 0, value = 4 }, { row = 3, col = 1, value = 32 }
+-- ]
+--
+-- N.B. The order of tiles, tilesU, tilesUR, tilesL and tilesLD doesn't matter.
+move : Direction -> List Tile -> List Tile
+move dir tiles =
+  case dir of
+    Up ->
+      tiles
+        |> groupByColTB
+        |> List.map moveUp
+        |> List.concat
+
+    Down ->
+      tiles
+        |> groupByColBT
+        |> List.map moveDown
+        |> List.concat
+
+    Left ->
+      tiles
+        |> groupByRowLR
+        |> List.map moveLeft
+        |> List.concat
+
+    Right ->
+      tiles
+        |> groupByRowRL
+        |> List.map moveRight
+        |> List.concat
 
 -- TILE
 

@@ -1,4 +1,4 @@
-module Game exposing (main, groupByRowLR, groupByRowRL, moveUp, moveDown, moveLeft, moveRight)
+module Game exposing (main, groupByRowLR, groupByRowRL, groupByColTB, moveUp, moveDown, moveLeft, moveRight)
 
 import Dict
 import Html exposing (..)
@@ -226,6 +226,71 @@ groupByRow tiles =
 
             (tile :: _) ->
               if first.row == tile.row then
+                iter (first :: group) groups rest
+              else
+                iter [ first ] (group :: groups) rest
+  in
+    iter [] [] tiles
+
+-- Takes a list of tiles, in any order, that make up the grid and groups them
+-- by column such that each column is ordered from top to bottom.
+-- If a column doesn't have any tiles then nothing is returned for that column.
+--
+-- Examples:
+--
+-- groupByColTB []
+-- => []
+--
+-- groupByColTB
+--   [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
+--   , { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 }
+--   , { row = 0, col = 3, value = 4 }, { row = 3, col = 2, value = 4 }
+--   ]
+-- =>
+-- [ [ { row = 2, col = 0, value = 2 } ]
+-- , [ { row = 0, col = 1, value = 2 }, { row = 2, col = 1, value = 16 } ]
+-- , [ { row = 3, col = 2, value = 4 } ]
+-- , [ { row = 0, col = 3, value = 4 }, { row = 3, col = 3, value = 32 } ]
+-- ]
+groupByColTB : List Tile -> List (List Tile)
+groupByColTB tiles =
+  let
+    -- Right to left, bottom to top
+    rlbt : Tile -> Tile -> Order
+    rlbt tile1 tile2 =
+      case compare tile1.col tile2.col of
+        EQ ->
+          compare tile2.row tile1.row
+
+        LT ->
+          GT
+
+        GT ->
+          LT
+  in
+    tiles
+      |> List.sortWith rlbt
+      |> groupByCol
+
+groupByCol : List Tile -> List (List Tile)
+groupByCol tiles =
+  let
+    iter : List Tile -> List (List Tile) -> List Tile -> List (List Tile)
+    iter group groups tiles =
+      case tiles of
+        [] ->
+          if List.isEmpty group then
+            groups
+          else
+            group :: groups
+
+        (first :: rest) ->
+          case group of
+            [] ->
+              iter [ first ] groups rest
+
+            (tile :: _) ->
+              if first.col == tile.col then
                 iter (first :: group) groups rest
               else
                 iter [ first ] (group :: groups) rest

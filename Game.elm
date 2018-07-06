@@ -1,4 +1,4 @@
-module Game exposing (main, groupByRowLR, groupByRowRL, groupByColTB, moveUp, moveDown, moveLeft, moveRight)
+module Game exposing (main, groupByRowLR, groupByRowRL, groupByColTB, groupByColBT, moveUp, moveDown, moveLeft, moveRight)
 
 import Dict
 import Html exposing (..)
@@ -270,6 +270,46 @@ groupByColTB tiles =
   in
     tiles
       |> List.sortWith rlbt
+      |> groupByCol
+
+-- Takes a list of tiles, in any order, that make up the grid and groups them
+-- by column such that each column is ordered from bottom to top.
+-- If a column doesn't have any tiles then nothing is returned for that column.
+--
+-- Examples:
+--
+-- groupByColBT []
+-- => []
+--
+-- groupByColBT
+--   [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
+--   , { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 }
+--   , { row = 0, col = 3, value = 4 }, { row = 3, col = 2, value = 4 }
+--   ]
+-- =>
+-- [ [ { row = 3, col = 3, value = 32 }, { row = 0, col = 3, value = 4 } ]
+-- , [ { row = 3, col = 2, value = 4 } ]
+-- , [ { row = 2, col = 1, value = 16 }, { row = 0, col = 1, value = 2 } ]
+-- , [ { row = 2, col = 0, value = 2 } ]
+-- ]
+groupByColBT : List Tile -> List (List Tile)
+groupByColBT tiles =
+  let
+    -- Left to right, top to bottom
+    lrtb : Tile -> Tile -> Order
+    lrtb tile1 tile2 =
+      case compare tile1.col tile2.col of
+        EQ ->
+          compare tile1.row tile2.row
+
+        LT ->
+          LT
+
+        GT ->
+          GT
+  in
+    tiles
+      |> List.sortWith lrtb
       |> groupByCol
 
 groupByCol : List Tile -> List (List Tile)

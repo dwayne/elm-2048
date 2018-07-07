@@ -32,23 +32,23 @@ tiles =
 
 tilesU : List Tile
 tilesU =
-  Tuple.first (move Up tiles)
+  .tiles (move Up tiles)
 
 tilesUR : List Tile
 tilesUR =
-  Tuple.first (move Right tilesU)
+  .tiles (move Right tilesU)
 
 tilesL : List Tile
 tilesL =
-  Tuple.first (move Left tiles)
+  .tiles (move Left tiles)
 
 tilesLD : List Tile
 tilesLD =
-  Tuple.first (move Down tilesL)
+  .tiles (move Down tilesL)
 
 model : Model
 model =
-  { score = Tuple.second (move Right tilesU)
+  { score = .score (move Right tilesU)
     -- Put one of tiles, tilesU, tilesUR, tilesL, or tilesLD here to see how
     -- move works.
   , tiles = tilesUR
@@ -199,8 +199,13 @@ type Direction
   | Left
   | Right
 
+type alias Movement =
+  { tiles : List Tile
+  , score : Int
+  , moved : Bool
+  }
+
 -- Takes a list of tiles, in any order, and moves them in the given direction.
--- The resulting tiles and the score earned is returned.
 --
 -- Examples:
 --
@@ -212,54 +217,61 @@ type Direction
 --
 -- move Up tiles
 -- =>
--- ( [ { row = 0, col = 0, value = 2 }, { row = 0, col = 1, value = 2 }
---   , { row = 0, col = 2, value = 4 }, { row = 0, col = 3, value = 4 }
---   , { row = 1, col = 1, value = 16 }, { row = 1, col = 3, value = 32 }
---   ]
--- , 0
--- )
--- tilesU = Tuple.first (move Up tiles)
+-- { tiles = [ { row = 0, col = 0, value = 2 }, { row = 0, col = 1, value = 2 }
+--           , { row = 0, col = 2, value = 4 }, { row = 0, col = 3, value = 4 }
+--           , { row = 1, col = 1, value = 16 }, { row = 1, col = 3, value = 32 }
+--           ]
+-- , score = 0
+-- , moved = True
+-- }
+-- tilesU = .tiles (move Up tiles)
 --
 -- move Right tilesU
 -- =>
--- ( [ { row = 0, col = 2, value = 4 }, { row = 0, col = 3, value = 8 }
---   , { row = 1, col = 2, value = 16 }, { row = 1, col = 3, value = 32 }
---   ]
--- , 12
--- )
--- tilesUR = Tuple.first (move Right tilesU)
+-- { tiles = [ { row = 0, col = 2, value = 4 }, { row = 0, col = 3, value = 8 }
+--           , { row = 1, col = 2, value = 16 }, { row = 1, col = 3, value = 32 }
+--           ]
+-- , score = 12
+-- , moved = True
+-- }
+-- tilesUR = .tiles (move Right tilesU)
 --
 -- move Left tiles
 -- =>
--- ( [ { row = 0, col = 0, value = 2 }, { row = 0, col = 1, value = 4 }
---   , { row = 2, col = 0, value = 2 }, { row = 2, col = 1, value = 16 }
---   , { row = 3, col = 0, value = 4 }, { row = 3, col = 1, value = 32 }
---   ]
--- , 0
--- )
--- tilesL = Tuple.first (move Left tiles)
+-- { tiles = [ { row = 0, col = 0, value = 2 }, { row = 0, col = 1, value = 4 }
+--           , { row = 2, col = 0, value = 2 }, { row = 2, col = 1, value = 16 }
+--           , { row = 3, col = 0, value = 4 }, { row = 3, col = 1, value = 32 }
+--           ]
+-- , score = 0
+-- , moved = True
+-- }
+-- tilesL = .tiles (move Left tiles)
 --
 -- move Down tilesL
 -- =>
--- ( [ { row = 1, col = 1, value = 4 },
---   , { row = 2, col = 0, value = 4 }, { row = 2, col = 1, value = 16 }
---   , { row = 3, col = 0, value = 4 }, { row = 3, col = 1, value = 32 }
---   ]
--- , 4
--- )
--- tilesLD = Tuple.first (move Down tilesL)
+-- { tiles = [ { row = 1, col = 1, value = 4 },
+--           , { row = 2, col = 0, value = 4 }, { row = 2, col = 1, value = 16 }
+--           , { row = 3, col = 0, value = 4 }, { row = 3, col = 1, value = 32 }
+--           ]
+-- , score = 4
+-- , moved = True
+-- }
+-- tilesLD = .tiles (move Down tilesL)
 --
 -- N.B. The order of tiles, tilesU, tilesUR, tilesL and tilesLD doesn't matter.
-move : Direction -> List Tile -> (List Tile, Int)
+move : Direction -> List Tile -> Movement
 move dir tiles =
   let
-    combine : List (List Tile, Int) -> (List Tile, Int)
+    combine : List Movement -> Movement
     combine =
       List.foldl
-        (\(tiles, score) (allTiles, totalScore) ->
-          (tiles ++ allTiles, score + totalScore)
+        (\next all ->
+          { tiles = next.tiles ++ all.tiles
+          , score = next.score + all.score
+          , moved = next.moved || all.moved
+          }
         )
-        ([], 0)
+        { tiles = [], score = 0, moved = False }
   in
     case dir of
       Up ->
@@ -553,40 +565,48 @@ groupByCol tiles =
 
 -- Takes a list of tiles, that are in the same column, ordered from top to
 -- bottom and moves them to the topmost position they can move. If adjacent
--- tiles have the same value then they are merged (at most once). It also keeps
--- track of the score earned.
+-- tiles have the same value then they are merged (at most once).
 --
 -- Examples:
 --
 -- moveUp [ { row = 1, col = 0, value = 2 }, { row = 3, col = 0, value = 4 } ]
 -- =>
--- ( [ { row = 1, col = 0, value = 4 }, { row = 0, col = 0, value = 2 } ]
--- , 0
--- )
+-- { tiles = [ { row = 1, col = 0, value = 4 }, { row = 0, col = 0, value = 2 } ]
+-- , score = 0
+-- , moved = True
+-- }
 --
 -- moveUp [ { row = 1, col = 0, value = 2 }, { row = 3, col = 0, value = 2 } ]
 -- =>
--- ( [ { row = 0, col = 0, value = 4 } ]
--- , 4
+-- { tiles = [ { row = 0, col = 0, value = 4 } ]
+-- , score = 4
+-- , moved = True
 -- )
-moveUp : List Tile -> (List Tile, Int)
+--
+-- moveUp [ { row = 0, col = 0, value = 4 } ]
+-- =>
+-- { tiles = [ { row = 0, col = 0, value = 4 } ]
+-- , score = 0
+-- , moved = False
+-- }
+moveUp : List Tile -> Movement
 moveUp tiles =
   let
-    move : Int -> Maybe Tile -> List Tile -> Int -> List Tile -> (List Tile, Int)
-    move farthest prev accum score tiles =
+    move : Int -> Maybe Tile -> List Tile -> Int -> Bool -> List Tile -> Movement
+    move farthest prev accum score moved tiles =
       case tiles of
         [] ->
           case prev of
             Nothing ->
-              (accum, score)
+              { tiles = accum, score = score, moved = moved }
 
             Just prev ->
-              (prev :: accum, score)
+              { tiles = prev :: accum, score = score, moved = moved }
 
         (tile :: rest) ->
           case prev of
             Nothing ->
-              move (farthest + 1) (Just { tile | row = farthest }) accum score rest
+              move (farthest + 1) (Just { tile | row = farthest }) accum score (moved || tile.row /= farthest) rest
 
             Just prev ->
               if prev.value == tile.value then
@@ -594,48 +614,56 @@ moveUp tiles =
                   newValue =
                     2 * prev.value
                 in
-                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) rest
+                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) True rest
               else
-                move (farthest + 1) (Just { tile | row = farthest }) (prev :: accum) score rest
+                move (farthest + 1) (Just { tile | row = farthest }) (prev :: accum) score (moved || tile.row /= farthest) rest
   in
-    move 0 Nothing [] 0 tiles
+    move 0 Nothing [] 0 False tiles
 
 -- Takes a list of tiles, that are in the same column, ordered from bottom to
 -- top and moves them to the bottommost position they can move. If adjacent
--- tiles have the same value then they are merged (at most once). It also keeps
--- track of the score earned.
+-- tiles have the same value then they are merged (at most once).
 --
 -- Examples:
 --
 -- moveDown [ { row = 2, col = 0, value = 4 }, { row = 0, col = 0, value = 2 } ]
 -- =>
--- ( [ { row = 2, col = 0, value = 2 }, { row = 3, col = 0, value = 4 } ]
--- , 0
--- )
+-- { tiles = [ { row = 2, col = 0, value = 2 }, { row = 3, col = 0, value = 4 } ]
+-- , score = 0
+-- , moved = True
+-- }
 --
 -- moveDown [ { row = 2, col = 0, value = 2 }, { row = 0, col = 0, value = 2 } ]
 -- =>
--- ( [ { row = 3, col = 0, value = 4 } ]
--- , 4
--- )
-moveDown : List Tile -> (List Tile, Int)
+-- { tiles = [ { row = 3, col = 0, value = 4 } ]
+-- , score = 4
+-- , moved = True
+-- }
+--
+-- moveDown [ { row = 3, col = 0, value = 4 } ]
+-- =>
+-- { tiles = [ { row = 3, col = 0, value = 4 } ]
+-- , score = 0
+-- , moved = False
+-- }
+moveDown : List Tile -> Movement
 moveDown tiles =
   let
-    move : Int -> Maybe Tile -> List Tile -> Int -> List Tile -> (List Tile, Int)
-    move farthest prev accum score tiles =
+    move : Int -> Maybe Tile -> List Tile -> Int -> Bool -> List Tile -> Movement
+    move farthest prev accum score moved tiles =
       case tiles of
         [] ->
           case prev of
             Nothing ->
-              (accum, score)
+              { tiles = accum, score = score, moved = moved }
 
             Just prev ->
-              (prev :: accum, score)
+              { tiles = prev :: accum, score = score, moved = moved }
 
         (tile :: rest) ->
           case prev of
             Nothing ->
-              move (farthest - 1) (Just { tile | row = farthest }) accum score rest
+              move (farthest - 1) (Just { tile | row = farthest }) accum score (moved || tile.row /= farthest) rest
 
             Just prev ->
               if prev.value == tile.value then
@@ -643,48 +671,56 @@ moveDown tiles =
                   newValue =
                     2 * prev.value
                 in
-                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) rest
+                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) True rest
               else
-                move (farthest - 1) (Just { tile | row = farthest }) (prev :: accum) score rest
+                move (farthest - 1) (Just { tile | row = farthest }) (prev :: accum) score (moved || tile.row /= farthest) rest
   in
-    move (cellCount - 1) Nothing [] 0 tiles
+    move (cellCount - 1) Nothing [] 0 False tiles
 
 -- Takes a list of tiles, that are in the same row, ordered from left to right
 -- and moves them to the farthest left position they can move. If adjacent tiles
--- have the same value then they are merged (at most once). It also keeps track
--- of the score earned.
+-- have the same value then they are merged (at most once).
 --
 -- Examples:
 --
 -- moveLeft [ { row = 0, col = 1, value = 2 }, { row = 0, col = 3, value = 4 } ]
 -- =>
--- ( [ { row = 0, col = 1, value = 4 }, { row = 0, col = 0, value = 2 } ]
--- , 0
--- )
+-- { tiles = [ { row = 0, col = 1, value = 4 }, { row = 0, col = 0, value = 2 } ]
+-- , score = 0
+-- , moved = True
+-- }
 --
 -- moveLeft [ { row = 0, col = 1, value = 2 }, { row = 0, col = 3, value = 2 } ]
 -- =>
--- ( [ { row = 0, col = 0, value = 4 } ]
--- , 4
--- )
-moveLeft : List Tile -> (List Tile, Int)
+-- { tiles = [ { row = 0, col = 0, value = 4 } ]
+-- , score = 4
+-- , moved = True
+-- }
+--
+-- moveLeft [ { row = 0, col = 0, value = 4 } ]
+-- =>
+-- { tiles = [ { row = 0, col = 0, value = 4 } ]
+-- , score = 0
+-- , moved = False
+-- }
+moveLeft : List Tile -> Movement
 moveLeft tiles =
   let
-    move : Int -> Maybe Tile -> List Tile -> Int -> List Tile -> (List Tile, Int)
-    move farthest prev accum score tiles =
+    move : Int -> Maybe Tile -> List Tile -> Int -> Bool -> List Tile -> Movement
+    move farthest prev accum score moved tiles =
       case tiles of
         [] ->
           case prev of
             Nothing ->
-              (accum, score)
+              { tiles = accum, score = score, moved = moved }
 
             Just prev ->
-              (prev :: accum, score)
+              { tiles = prev :: accum, score = score, moved = moved }
 
         (tile :: rest) ->
           case prev of
             Nothing ->
-              move (farthest + 1) (Just { tile | col = farthest }) accum score rest
+              move (farthest + 1) (Just { tile | col = farthest }) accum score (moved || tile.col /= farthest) rest
 
             Just prev ->
               if prev.value == tile.value then
@@ -692,48 +728,56 @@ moveLeft tiles =
                   newValue =
                     2 * prev.value
                 in
-                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) rest
+                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) True rest
               else
-                move (farthest + 1) (Just { tile | col = farthest }) (prev :: accum) score rest
+                move (farthest + 1) (Just { tile | col = farthest }) (prev :: accum) score (moved || tile.col /= farthest) rest
   in
-    move 0 Nothing [] 0 tiles
+    move 0 Nothing [] 0 False tiles
 
 -- Takes a list of tiles, that are in the same row, ordered from right to left
 -- and moves them to the farthest right position they can move. If adjacent tiles
--- have the same value then they are merged (at most once). It also keeps track
--- of the score earned.
+-- have the same value then they are merged (at most once).
 --
 -- Examples:
 --
 -- moveRight [ { row = 0, col = 2, value = 4 }, { row = 0, col = 0, value = 2 } ]
 -- =>
--- ( [ { row = 0, col = 2, value = 2 }, { row = 0, col = 3, value = 4 } ]
--- , 0
--- )
+-- { tiles = [ { row = 0, col = 2, value = 2 }, { row = 0, col = 3, value = 4 } ]
+-- , score = 0
+-- , moved = True
+-- }
 --
 -- moveRight [ { row = 0, col = 2, value = 2 }, { row = 0, col = 0, value = 2 } ]
 -- =>
--- ( [ { row = 0, col = 3, value = 4 } ]
--- , 4
--- )
-moveRight : List Tile -> (List Tile, Int)
+-- { tiles = [ { row = 0, col = 3, value = 4 } ]
+-- , score = 4
+-- , moved = True
+-- }
+--
+-- moveRight [ { row = 0, col = 3, value = 4 } ]
+-- =>
+-- { tiles = [ { row = 0, col = 3, value = 4 } ]
+-- , score = 0
+-- , moved = False
+-- }
+moveRight : List Tile -> Movement
 moveRight tiles =
   let
-    move : Int -> Maybe Tile -> List Tile -> Int -> List Tile -> (List Tile, Int)
-    move farthest prev accum score tiles =
+    move : Int -> Maybe Tile -> List Tile -> Int -> Bool -> List Tile -> Movement
+    move farthest prev accum score moved tiles =
       case tiles of
         [] ->
           case prev of
             Nothing ->
-              (accum, score)
+              { tiles = accum, score = score, moved = moved }
 
             Just prev ->
-              (prev :: accum, score)
+              { tiles = prev :: accum, score = score, moved = moved }
 
         (tile :: rest) ->
           case prev of
             Nothing ->
-              move (farthest - 1) (Just { tile | col = farthest }) accum score rest
+              move (farthest - 1) (Just { tile | col = farthest }) accum score (moved || tile.col /= farthest) rest
 
             Just prev ->
               if prev.value == tile.value then
@@ -741,11 +785,11 @@ moveRight tiles =
                   newValue =
                     2 * prev.value
                 in
-                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) rest
+                  move farthest Nothing ({ prev | value = newValue } :: accum) (score + newValue) True rest
               else
-                move (farthest - 1) (Just { tile | col = farthest }) (prev :: accum) score rest
+                move (farthest - 1) (Just { tile | col = farthest }) (prev :: accum) score (moved || tile.col /= farthest) rest
   in
-    move (cellCount - 1) Nothing [] 0 tiles
+    move (cellCount - 1) Nothing [] 0 False tiles
 
 type alias TileInfo =
   { color : String

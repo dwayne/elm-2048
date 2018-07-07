@@ -159,6 +159,40 @@ availableCells tiles =
       )
       allPositions
 
+-- Determines whether a move can be made.
+--
+-- A move can be made if there is at least one cell not occupied by a tile or
+-- if we can merge one tile onto another.
+hasMoves : List Tile -> Bool
+hasMoves tiles =
+  let
+    hasCells =
+      not (List.isEmpty (availableCells tiles))
+  in
+    hasCells || hasTileMatches tiles
+
+hasTileMatches : List Tile -> Bool
+hasTileMatches tiles =
+  let
+    possibleMoves : Tile -> List Tile
+    possibleMoves tile =
+      [ { tile | row = tile.row - 1 }
+      , { tile | col = tile.col - 1 }
+      , { tile | col = tile.col + 1 }
+      , { tile | row = tile.row + 1 }
+      ]
+
+    hasTilesInCommon : List Tile -> List Tile -> Bool
+    hasTilesInCommon a b =
+      List.any (\tile -> List.any ((==) tile) b) a
+  in
+    case tiles of
+      [] ->
+        False
+
+      (first :: rest) ->
+        hasTilesInCommon (possibleMoves first) rest || hasTileMatches rest
+
 type Direction
   = Up
   | Down

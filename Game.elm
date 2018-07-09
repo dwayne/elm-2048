@@ -1,14 +1,20 @@
-module Game exposing (main, valueGen, oneTileGen, twoTileGen, availableCells, groupByRowLR, groupByRowRL, groupByColTB, groupByColBT, moveUp, moveDown, moveLeft, moveRight)
+module Game exposing (main)
 
 import Dict
 import Html exposing (..)
+import Html.Events as Events
 import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes
 
-main : Html msg
+main : Program Never Model Msg
 main =
-  view model
+  Html.program
+    { init = init
+    , update = update
+    , view = view
+    , subscriptions = always Sub.none
+    }
 
 -- MODEL
 
@@ -23,45 +29,39 @@ type alias Tile =
   , value : Int
   }
 
-tiles : List Tile
-tiles =
-  [ { row = 3, col = 3, value = 32 }, { row = 0, col = 1, value = 2 }
-  , { row = 2, col = 1, value = 16 }, { row = 2, col = 0, value = 2 }
-  , { row = 0, col = 3, value = 4 }, { row = 3, col = 2, value = 4 }
-  ]
+init : (Model, Cmd Msg)
+init =
+  { score = 0
+  , tiles = []
+  } ! [ newGrid ]
 
-tilesU : List Tile
-tilesU =
-  .tiles (move Up tiles)
+-- UPDATE
 
-tilesUR : List Tile
-tilesUR =
-  .tiles (move Right tilesU)
+type Msg
+  = NewGame
+  | NewGrid (List Tile)
 
-tilesL : List Tile
-tilesL =
-  .tiles (move Left tiles)
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    NewGame ->
+      { model | score = 0 } ! [ newGrid ]
 
-tilesLD : List Tile
-tilesLD =
-  .tiles (move Down tilesL)
+    NewGrid tiles ->
+      { model | tiles = tiles } ! []
 
-model : Model
-model =
-  { score = .score (move Right tilesU)
-    -- Put one of tiles, tilesU, tilesUR, tilesL, or tilesLD here to see how
-    -- move works.
-  , tiles = tilesUR
-  }
+newGrid : Cmd Msg
+newGrid =
+  Random.generate NewGrid startGridGen
 
 -- VIEW
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view { score, tiles } =
   div []
     [ h1 [] [ text "Elm 2048" ]
     , p [] [ text <| "Score: " ++ (toString score) ]
-    , p [] [ button [] [ text "New Game" ] ]
+    , p [] [ button [ Events.onClick NewGame ] [ text "New Game" ] ]
     , viewGrid tiles
     ]
 
@@ -346,6 +346,12 @@ twoTileGen tiles =
         oneTileGen (tile :: tiles)
           |> Random.map ((,) tile)
       )
+
+-- Generate a grid with two tiles in any of the available positions.
+startGridGen : Generator (List Tile)
+startGridGen =
+  twoTileGen []
+    |> Random.map (\(tile1, tile2) -> [ tile1, tile2 ])
 
 -- Takes a list of tiles, in any order, that make up the grid and groups them
 -- by row from top to bottom such that each row is ordered from left to right.

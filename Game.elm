@@ -3,6 +3,7 @@ module Game exposing (main)
 import Dict
 import Html exposing (..)
 import Html.Events as Events
+import Keyboard
 import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes
@@ -13,7 +14,7 @@ main =
     { init = init
     , update = update
     , view = view
-    , subscriptions = always Sub.none
+    , subscriptions = subscriptions
     }
 
 -- MODEL
@@ -38,21 +39,71 @@ init =
 -- UPDATE
 
 type Msg
-  = NewGame
+  = KeyDown Keyboard.KeyCode
+  | NewGame
   | NewGrid (List Tile)
+  | NextGrid (List Tile)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
+    KeyDown code ->
+      let
+        direction : Maybe Direction
+        direction =
+          case code of
+            37 ->
+              Just Left
+
+            38 ->
+              Just Up
+
+            39 ->
+              Just Right
+
+            40 ->
+              Just Down
+
+            _ ->
+              Nothing
+
+        movement : Maybe Movement
+        movement =
+          Maybe.map (\dir -> move dir model.tiles) direction
+      in
+        case movement of
+          Nothing ->
+            model ! []
+
+          Just { score, tiles, moved } ->
+            if moved then
+              { model | score = model.score + score, tiles = tiles } ! [ nextGrid tiles ]
+            else
+              model ! []
+
     NewGame ->
       { model | score = 0 } ! [ newGrid ]
 
     NewGrid tiles ->
       { model | tiles = tiles } ! []
 
+    NextGrid tiles ->
+      let
+        nextModel =
+          { model | tiles = tiles }
+      in
+        if hasMoves tiles then
+          nextModel ! []
+        else
+          Debug.log "Game over" nextModel ! []
+
 newGrid : Cmd Msg
 newGrid =
   Random.generate NewGrid startGridGen
+
+nextGrid : List Tile -> Cmd Msg
+nextGrid tiles =
+  Random.generate NextGrid (nextGridGen tiles)
 
 -- VIEW
 
@@ -64,6 +115,12 @@ view { score, tiles } =
     , p [] [ button [ Events.onClick NewGame ] [ text "New Game" ] ]
     , viewGrid tiles
     ]
+
+-- SUBSCRIPTIONS
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Keyboard.downs KeyDown
 
 -- GRID
 
@@ -352,6 +409,12 @@ startGridGen : Generator (List Tile)
 startGridGen =
   twoTileGen []
     |> Random.map (\(tile1, tile2) -> [ tile1, tile2 ])
+
+-- Generate a grid with one extra tile added in one of the available positions.
+nextGridGen : List Tile -> Generator (List Tile)
+nextGridGen tiles =
+  oneTileGen tiles
+    |> Random.map (\tile -> tile :: tiles)
 
 -- Takes a list of tiles, in any order, that make up the grid and groups them
 -- by row from top to bottom such that each row is ordered from left to right.

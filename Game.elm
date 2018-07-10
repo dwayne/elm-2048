@@ -19,10 +19,18 @@ main =
 
 -- MODEL
 
-type alias Model =
+type Model
+  = Playing GameInfo
+  | Gameover Outcome GameInfo
+
+type alias GameInfo =
   { score : Int
   , tiles : List Tile
   }
+
+type Outcome
+  = Winner
+  | Loser
 
 type alias Tile =
   { row : Int
@@ -32,9 +40,13 @@ type alias Tile =
 
 init : (Model, Cmd Msg)
 init =
+  Playing emptyInfo ! [ newGrid ]
+
+emptyInfo : GameInfo
+emptyInfo =
   { score = 0
   , tiles = []
-  } ! [ newGrid ]
+  }
 
 -- UPDATE
 
@@ -46,6 +58,15 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
+  case model of
+    Playing info ->
+      updatePlaying msg info
+
+    Gameover outcome info ->
+      updateGameover msg outcome info
+
+updatePlaying : Msg -> GameInfo -> (Model, Cmd Msg)
+updatePlaying msg info =
   case msg of
     KeyDown code ->
       let
@@ -69,33 +90,49 @@ update msg model =
 
         movement : Maybe Movement
         movement =
-          Maybe.map (\dir -> move dir model.tiles) direction
+          Maybe.map (\dir -> move dir info.tiles) direction
       in
         case movement of
           Nothing ->
-            model ! []
+            Playing info ! []
 
           Just { score, tiles, moved } ->
             if moved then
-              { model | score = model.score + score, tiles = tiles } ! [ nextGrid tiles ]
+              let
+                newInfo =
+                  { info | score = info.score + score, tiles = tiles }
+              in
+                if has2048Tile tiles then
+                  Gameover Winner newInfo ! []
+                else
+                  Playing newInfo ! [ nextGrid tiles ]
             else
-              model ! []
+              Playing info ! []
 
     NewGame ->
-      { model | score = 0 } ! [ newGrid ]
+      Playing emptyInfo ! [ newGrid ]
 
     NewGrid tiles ->
-      { model | tiles = tiles } ! []
+      Playing { info | tiles = tiles } ! []
 
     NextGrid tiles ->
       let
-        nextModel =
-          { model | tiles = tiles }
+        newInfo =
+          { info | tiles = tiles }
       in
         if hasMoves tiles then
-          nextModel ! []
+          Playing newInfo ! []
         else
-          Debug.log "Game over" nextModel ! []
+          Gameover Loser newInfo ! []
+
+updateGameover : Msg -> Outcome -> GameInfo -> (Model, Cmd Msg)
+updateGameover msg outcome info =
+  case msg of
+    NewGame ->
+      Playing emptyInfo ! [ newGrid ]
+
+    _ ->
+      Gameover outcome info ! []
 
 newGrid : Cmd Msg
 newGrid =
@@ -108,19 +145,46 @@ nextGrid tiles =
 -- VIEW
 
 view : Model -> Html Msg
-view { score, tiles } =
+view model =
+  case model of
+    Playing info ->
+      viewPlaying info
+
+    Gameover outcome info ->
+      viewGameover outcome info
+
+viewPlaying : GameInfo -> Html Msg
+viewPlaying { score, tiles } =
+  div []
+    [ viewHeader score
+    , viewGrid Nothing tiles
+    ]
+
+viewGameover : Outcome -> GameInfo -> Html Msg
+viewGameover outcome { score, tiles } =
+  div []
+    [ viewHeader score
+    , viewGrid (Just outcome) tiles
+    ]
+
+viewHeader : Int -> Html Msg
+viewHeader score =
   div []
     [ h1 [] [ text "Elm 2048" ]
     , p [] [ text <| "Score: " ++ (toString score) ]
     , p [] [ button [ Events.onClick NewGame ] [ text "New Game" ] ]
-    , viewGrid tiles
     ]
 
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Keyboard.downs KeyDown
+subscriptions model =
+  case model of
+    Playing _ ->
+      Keyboard.downs KeyDown
+
+    Gameover _ _ ->
+      Sub.none
 
 -- GRID
 
@@ -149,8 +213,8 @@ gridSize =
 gridColor : String
 gridColor = "#bbada0"
 
-viewGrid : List Tile -> Html msg
-viewGrid tiles =
+viewGrid : Maybe Outcome -> List Tile -> Html msg
+viewGrid outcome tiles =
   let
     size =
       toString gridSize
@@ -163,6 +227,15 @@ viewGrid tiles =
       ]
       [ viewCells
       , viewTiles tiles
+      , case outcome of
+          Nothing ->
+            Svg.text ""
+
+          Just Winner ->
+            viewOutcome "#edc22e" "#f9f6f2" "You win!"
+
+          Just Loser ->
+            viewOutcome "#eee4da" "#776e65" "Game over!"
       ]
 
 viewCells : Svg msg
@@ -189,6 +262,43 @@ viewCell row col =
       , Svg.Attributes.height size
       ]
       []
+
+viewOutcome : String -> String -> String -> Svg msg
+viewOutcome bgColor color message =
+  let
+    size =
+      toString gridSize
+
+    halfGridSize =
+      gridSize // 2
+
+    textX =
+      halfGridSize
+
+    textY =
+      halfGridSize
+  in
+    Svg.g []
+      [ Svg.rect
+          [ Svg.Attributes.x "0"
+          , Svg.Attributes.y "0"
+          , Svg.Attributes.width size
+          , Svg.Attributes.height size
+          , Svg.Attributes.fill bgColor
+          , Svg.Attributes.opacity "0.5"
+          ]
+          []
+      , Svg.text_
+          [ Svg.Attributes.x (toString textX)
+          , Svg.Attributes.y (toString textY)
+          , Svg.Attributes.fontSize "60px"
+          , Svg.Attributes.fontWeight "bold"
+          , Svg.Attributes.textAnchor "middle"
+          , Svg.Attributes.dominantBaseline "central"
+          , Svg.Attributes.fill color
+          ]
+          [ Svg.text message ]
+      ]
 
 -- Determines all the available cell positions.
 --
@@ -249,6 +359,10 @@ hasTileMatches tiles =
 
       (first :: rest) ->
         hasTilesInCommon (possibleMoves first) rest || hasTileMatches rest
+
+has2048Tile : List Tile -> Bool
+has2048Tile tiles =
+  List.any (\tile -> tile.value == 2048) tiles
 
 type Direction
   = Up

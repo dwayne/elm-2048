@@ -2,6 +2,7 @@ module Game.Config exposing
   ( cellCount, cellTotal, cellSize, cellDistance, cellColor
   , minValue, maxValue, minValueProb, TileInfo, tileInfo
   , gridSize, gridColor
+  , Outcome(..), OutcomeInfo, outcomeInfo
   )
 
 import Dict
@@ -93,3 +94,35 @@ gridSize =
 
 gridColor : String
 gridColor = "#bbada0"
+
+
+-- OUTCOME
+
+
+type Outcome
+  = Winner
+  | Loser
+
+type alias OutcomeInfo =
+  { color : String
+  , textColor : String
+  , fontSize : String
+  , message : String
+  }
+
+outcomeInfo : Outcome -> OutcomeInfo
+outcomeInfo outcome =
+  case outcome of
+    Winner ->
+      { color = "rgba(237, 194, 46, 0.5)"
+      , textColor = "#f9f6f2"
+      , fontSize = "60px"
+      , message = "You win!"
+      }
+
+    Loser ->
+      { color = "rgba(238, 228, 218, 0.5)"
+      , textColor = "#776e65"
+      , fontSize = "60px"
+      , message = "Game over!"
+      }

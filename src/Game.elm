@@ -7,7 +7,7 @@ import Random
 import Svg exposing (Svg)
 import Svg.Attributes
 
-import Game.Config as C
+import Game.Config as C exposing (Outcome(..))
 import Game.Grid as Grid exposing (Grid, Tile, Direction(..), Movement)
 import Game.List exposing (cartesianMap)
 
@@ -25,17 +25,21 @@ main =
 -- MODEL
 
 
-type alias Model =
+type Model
+  = Playing GameInfo
+  | Gameover Outcome GameInfo
+
+type alias GameInfo =
   { score : Int
   , grid : Grid
   }
 
 init : (Model, Cmd Msg)
 init =
-  emptyModel ! [ newGrid ]
+  Playing emptyInfo ! [ newGrid ]
 
-emptyModel : Model
-emptyModel =
+emptyInfo : GameInfo
+emptyInfo =
   { score = 0
   , grid = Grid.empty
   }
@@ -52,6 +56,15 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
+  case model of
+    Playing info ->
+      updatePlaying msg info
+
+    Gameover outcome info ->
+      updateGameover msg outcome info
+
+updatePlaying : Msg -> GameInfo -> (Model, Cmd Msg)
+updatePlaying msg info =
   case msg of
     KeyDown code ->
       let
@@ -75,40 +88,49 @@ update msg model =
 
         movement : Maybe Movement
         movement =
-          Maybe.map (\dir -> Grid.move dir model.grid) direction
+          Maybe.map (\dir -> Grid.move dir info.grid) direction
       in
         case movement of
           Nothing ->
-            model ! []
+            Playing info ! []
 
           Just { grid, score, moved } ->
             if moved then
               let
-                newModel =
-                  { model | score = model.score + score, grid = grid }
+                newInfo =
+                  { info | score = info.score + score, grid = grid }
               in
                 if Grid.hasWinningTile grid then
-                  Debug.log "You win!" newModel ! []
+                  Gameover Winner newInfo ! []
                 else
-                  newModel ! [ nextGrid grid ]
+                  Playing newInfo ! [ nextGrid grid ]
             else
-              model ! []
+              Playing info ! []
 
     NewGame ->
-      emptyModel ! [ newGrid ]
+      Playing emptyInfo ! [ newGrid ]
 
     NewGrid grid ->
-      { model | grid = grid } ! []
+      Playing { info | grid = grid } ! []
 
     NextGrid grid ->
       let
-        newModel =
-          { model | grid = grid }
+        newInfo =
+          { info | grid = grid }
       in
         if Grid.hasMoves grid then
-          newModel ! []
+          Playing newInfo ! []
         else
-          Debug.log "Game over!" newModel ! []
+          Gameover Loser newInfo ! []
+
+updateGameover : Msg -> Outcome -> GameInfo -> (Model, Cmd Msg)
+updateGameover msg outcome info =
+  case msg of
+    NewGame ->
+      Playing emptyInfo ! [ newGrid ]
+
+    _ ->
+      Gameover outcome info ! []
 
 newGrid : Cmd Msg
 newGrid =
@@ -118,15 +140,29 @@ nextGrid : Grid -> Cmd Msg
 nextGrid grid =
   Random.generate NextGrid (Grid.next grid)
 
-
 -- VIEW
 
-
 view : Model -> Html Msg
-view { score, grid } =
+view model =
+  case model of
+    Playing info ->
+      viewPlaying info
+
+    Gameover outcome info ->
+      viewGameover outcome info
+
+viewPlaying : GameInfo -> Html Msg
+viewPlaying { score, grid } =
   div []
     [ viewHeader score
-    , viewGrid grid
+    , viewGrid Nothing grid
+    ]
+
+viewGameover : Outcome -> GameInfo -> Html Msg
+viewGameover outcome { score, grid } =
+  div []
+    [ viewHeader score
+    , viewGrid (Just outcome) grid
     ]
 
 viewHeader : Int -> Html Msg
@@ -137,8 +173,8 @@ viewHeader score =
     , p [] [ button [ Events.onClick NewGame ] [ text "New Game" ] ]
     ]
 
-viewGrid : Grid -> Html msg
-viewGrid grid =
+viewGrid : Maybe Outcome -> Grid -> Html msg
+viewGrid outcome grid =
   let
     size =
       toString C.gridSize
@@ -151,6 +187,9 @@ viewGrid grid =
       ]
       [ viewCells
       , viewTiles (Grid.toList grid)
+      , outcome
+          |> Maybe.map viewOutcome
+          |> Maybe.withDefault (Svg.text "")
       ]
 
 viewCells : Svg msg
@@ -227,10 +266,53 @@ viewTile { row, col, value } =
           [ Svg.text (toString value) ]
       ]
 
+viewOutcome : Outcome -> Svg msg
+viewOutcome outcome =
+  let
+    size =
+      toString C.gridSize
+
+    halfGridSize =
+      C.gridSize // 2
+
+    textX =
+      halfGridSize
+
+    textY =
+      halfGridSize
+
+    info =
+      C.outcomeInfo outcome
+  in
+    Svg.g []
+      [ Svg.rect
+          [ Svg.Attributes.x "0"
+          , Svg.Attributes.y "0"
+          , Svg.Attributes.width size
+          , Svg.Attributes.height size
+          , Svg.Attributes.fill info.color
+          ]
+          []
+      , Svg.text_
+          [ Svg.Attributes.x (toString textX)
+          , Svg.Attributes.y (toString textY)
+          , Svg.Attributes.fontSize info.fontSize
+          , Svg.Attributes.fontWeight "bold"
+          , Svg.Attributes.textAnchor "middle"
+          , Svg.Attributes.dominantBaseline "central"
+          , Svg.Attributes.fill info.textColor
+          ]
+          [ Svg.text info.message ]
+      ]
 
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Keyboard.downs KeyDown
+subscriptions model =
+  case model of
+    Playing _ ->
+      Keyboard.downs KeyDown
+
+    Gameover _ _ ->
+      Sub.none

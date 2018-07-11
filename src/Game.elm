@@ -2,12 +2,13 @@ module Game exposing (main)
 
 import Html exposing (..)
 import Html.Events as Events
+import Keyboard
 import Random
 import Svg exposing (Svg)
 import Svg.Attributes
 
 import Game.Config as C
-import Game.Grid as Grid exposing (Grid, Tile)
+import Game.Grid as Grid exposing (Grid, Tile, Direction(..), Movement)
 import Game.List exposing (cartesianMap)
 
 
@@ -17,7 +18,7 @@ main =
     { init = init
     , update = update
     , view = view
-    , subscriptions = always Sub.none
+    , subscriptions = subscriptions
     }
 
 
@@ -31,12 +32,21 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-  emptyModel ! [ newGrid ]
+  -- emptyModel ! [ newGrid ]
+  emptyModel ! []
 
 emptyModel : Model
 emptyModel =
   { score = 0
-  , grid = Grid.empty
+  , grid =
+      Grid.fromList
+        [ { row = 0, col = 0, value = 2 }
+        , { row = 0, col = 2, value = 4 }
+        , { row = 1, col = 1, value = 4 }
+        , { row = 1, col = 3, value = 2 }
+        , { row = 2, col = 2, value = 8 }
+        , { row = 3, col = 0, value = 16 }
+        ]
   }
 
 
@@ -44,12 +54,51 @@ emptyModel =
 
 
 type Msg
-  = NewGame
+  = KeyDown Keyboard.KeyCode
+  | NewGame
   | NewGrid Grid
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
+    KeyDown code ->
+      let
+        direction : Maybe Direction
+        direction =
+          case code of
+            37 ->
+              Just Left
+
+            38 ->
+              Just Up
+
+            39 ->
+              Just Right
+
+            40 ->
+              Just Down
+
+            _ ->
+              Nothing
+
+        movement : Maybe Movement
+        movement =
+          Maybe.map (\dir -> Grid.move dir model.grid) direction
+      in
+        case movement of
+          Nothing ->
+            model ! []
+
+          Just { grid, score, moved } ->
+            if moved then
+              let
+                newModel =
+                  { model | score = model.score + score, grid = grid }
+              in
+                newModel ! []
+            else
+              model ! []
+
     NewGame ->
       emptyModel ! [ newGrid ]
 
@@ -168,3 +217,11 @@ viewTile { row, col, value } =
           ]
           [ Svg.text (toString value) ]
       ]
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Keyboard.downs KeyDown

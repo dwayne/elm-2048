@@ -1,6 +1,6 @@
 module Game.Config exposing
   ( cellCount, cellSize, cellDistance, cellColor
-  , minValue, minValueProb, TileInfo, tileInfo
+  , minValue, maxValue, minValueProb, TileInfo, tileInfo
   , gridSize, gridColor
   )
 
@@ -38,6 +38,9 @@ cellColor = "rgba(238, 228, 218, 0.35)"
 
 minValue : Int
 minValue = 2
+
+maxValue : Int
+maxValue = 2048
 
 -- The probability for randomly choosing the minimum value.
 minValueProb : Float

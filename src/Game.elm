@@ -32,21 +32,12 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-  -- emptyModel ! [ newGrid ]
-  emptyModel ! []
+  emptyModel ! [ newGrid ]
 
 emptyModel : Model
 emptyModel =
   { score = 0
-  , grid =
-      Grid.fromList
-        [ { row = 0, col = 0, value = 2 }
-        , { row = 0, col = 2, value = 4 }
-        , { row = 1, col = 1, value = 4 }
-        , { row = 1, col = 3, value = 2 }
-        , { row = 2, col = 2, value = 8 }
-        , { row = 3, col = 0, value = 16 }
-        ]
+  , grid = Grid.empty
   }
 
 
@@ -57,6 +48,7 @@ type Msg
   = KeyDown Keyboard.KeyCode
   | NewGame
   | NewGrid Grid
+  | NextGrid Grid
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -95,7 +87,7 @@ update msg model =
                 newModel =
                   { model | score = model.score + score, grid = grid }
               in
-                newModel ! []
+                newModel ! [ nextGrid grid ]
             else
               model ! []
 
@@ -105,9 +97,16 @@ update msg model =
     NewGrid grid ->
       { model | grid = grid } ! []
 
+    NextGrid grid ->
+      { model | grid = grid } ! []
+
 newGrid : Cmd Msg
 newGrid =
   Random.generate NewGrid Grid.start
+
+nextGrid : Grid -> Cmd Msg
+nextGrid grid =
+  Random.generate NextGrid (Grid.next grid)
 
 
 -- VIEW

@@ -1,5 +1,5 @@
 module Game.Config exposing
-  ( cellCount, cellSize, cellDistance, cellColor
+  ( cellCount, cellTotal, cellSize, cellDistance, cellColor
   , minValue, maxValue, minValueProb, TileInfo, tileInfo
   , gridSize, gridColor
   )
@@ -13,6 +13,10 @@ import Dict
 -- The number of cells per row (or equivalently, per column).
 cellCount : Int
 cellCount = 4
+
+-- The total number of cells that make up a grid.
+cellTotal : Int
+cellTotal = cellCount * cellCount
 
 -- The length (in px) of one side of a cell.
 cellSize : Int

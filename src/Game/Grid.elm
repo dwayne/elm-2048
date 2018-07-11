@@ -2,7 +2,7 @@ module Game.Grid exposing
   ( Grid, Tile
   , empty, fromList
   , toList
-  , start
+  , start, next
   , Direction(..), Movement, move
   )
 
@@ -87,6 +87,20 @@ start : Generator Grid
 start =
   twoTiles []
     |> Random.map (\(tile1, tile2) -> Grid [tile1, tile2])
+
+-- Generate a grid with one extra tile in an available position.
+--
+-- N.B. If no positions are available then it returns the original grid.
+next : Grid -> Generator Grid
+next (Grid tiles) =
+  oneTile tiles
+    |> Random.map
+      (\tile ->
+        if List.length tiles == C.cellTotal then
+          Grid tiles
+        else
+          Grid (tile :: tiles)
+      )
 
 -- Generate one tile in an available position.
 --

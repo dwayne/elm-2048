@@ -4,6 +4,7 @@ module Game.Grid exposing
   , toList
   , start, next
   , Direction(..), Movement, move
+  , hasMoves, hasWinningTile
   )
 
 import Bitwise
@@ -716,6 +717,18 @@ moveRight tiles =
 -- QUERY
 
 
+-- Determines whether a move can be made.
+--
+-- A move can be made if there is at least one cell not occupied by a tile or
+-- if we can merge one tile onto another.
+hasMoves : Grid -> Bool
+hasMoves (Grid tiles) =
+  hasAvailableCells tiles || canMergeTiles tiles
+
+hasAvailableCells : List Tile -> Bool
+hasAvailableCells =
+  not << List.isEmpty << availableCells
+
 -- Determines all the available cell positions.
 --
 -- For e.g.
@@ -741,3 +754,29 @@ availableCells tiles =
           tiles
       )
       allPositions
+
+canMergeTiles : List Tile -> Bool
+canMergeTiles tiles =
+  let
+    possibleMoves : Tile -> List Tile
+    possibleMoves tile =
+      [ { tile | row = tile.row - 1 }
+      , { tile | col = tile.col - 1 }
+      , { tile | col = tile.col + 1 }
+      , { tile | row = tile.row + 1 }
+      ]
+
+    hasMergeableTiles : List Tile -> List Tile -> Bool
+    hasMergeableTiles a b =
+      List.any (\tile -> List.any ((==) tile) b) a
+  in
+    case tiles of
+      [] ->
+        False
+
+      (first :: rest) ->
+        hasMergeableTiles (possibleMoves first) rest || canMergeTiles rest
+
+hasWinningTile : Grid -> Bool
+hasWinningTile (Grid tiles) =
+  List.any (\tile -> tile.value == C.maxValue) tiles

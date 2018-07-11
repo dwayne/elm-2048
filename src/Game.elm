@@ -87,7 +87,10 @@ update msg model =
                 newModel =
                   { model | score = model.score + score, grid = grid }
               in
-                newModel ! [ nextGrid grid ]
+                if Grid.hasWinningTile grid then
+                  Debug.log "You win!" newModel ! []
+                else
+                  newModel ! [ nextGrid grid ]
             else
               model ! []
 
@@ -98,7 +101,14 @@ update msg model =
       { model | grid = grid } ! []
 
     NextGrid grid ->
-      { model | grid = grid } ! []
+      let
+        newModel =
+          { model | grid = grid }
+      in
+        if Grid.hasMoves grid then
+          newModel ! []
+        else
+          Debug.log "Game over!" newModel ! []
 
 newGrid : Cmd Msg
 newGrid =

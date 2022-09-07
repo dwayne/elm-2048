@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Move</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --width: 100px;
+        --height: 100px;
+        --gap: 10px;
+      }
+
+      .row {
+        width: calc(5 * var(--gap) + 4 * var(--width));
+        height: calc(2 * var(--gap) + var(--height));
+        background-color: grey;
+      }
+
+      .tile, .tile__inner {
+        width: var(--width);
+        height: var(--height);
+      }
+
+      .tile__inner {
+        background-color: green;
+      }
+
+      .tile-1-1 {
+        transform: translate(var(--gap), var(--gap));
+      }
+
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: scale(0);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .tile--new .tile__inner {
+        animation: appear 200ms ease 100ms;
+        animation-fill-mode: backwards;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <div class="tile tile-1-1 tile--new">
+        <div class="tile__inner"></div>
+      </div>
+    </div>
+  </body>
+</html>

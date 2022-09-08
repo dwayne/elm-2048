@@ -33,8 +33,7 @@ type alias Tile =
 
 type Kind
   = New
-  | Stale
-  | Used
+  | MoveTo (Int, Int)
   | Merged
 
 
@@ -59,18 +58,12 @@ update msg model =
     ClickedMerge ->
       { model
       | tiles =
-          -- The problem is that order matters.
-          -- This will not work as intended.
-          -- [ Tile (1, 4) 2 Used
-          -- , Tile (1, 4) 4 Merged
-          -- , Tile (1, 4) 2 Used
-          -- ]
-          -- But, this works!
-          [ Tile (1, 4) 2 Used
-          , Tile (1, 4) 2 Used
+          -- The order still matters.
+          [ Tile (1, 1) 2 <| MoveTo (1, 4)
+          , Tile (1, 3) 2 <| MoveTo (1, 4)
           , Tile (1, 4) 4 Merged
           ]
-          -- Q: How to fix?
+          -- But, what's the order that works?
       }
 
 
@@ -101,11 +94,8 @@ viewTile { position, value, kind } =
           New ->
             "tile--new"
 
-          Stale ->
-            "tile--stale"
-
-          Used ->
-            "tile--used"
+          MoveTo (mr, mc) ->
+            "tile-move-to-" ++ String.fromInt mr ++ "-" ++ String.fromInt mc
 
           Merged ->
             "tile--merged"

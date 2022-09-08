@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Merge</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --width: 100px;
+        --height: 100px;
+        --gap: 20px;
+        --duration: 2000ms;
+      }
+
+      .row {
+        width: calc(5 * var(--gap) + 4 * var(--width));
+        height: calc(2 * var(--gap) + var(--height));
+        background-color: grey;
+      }
+
+      .tile, .tile__inner {
+        width: var(--width);
+        height: var(--height);
+      }
+
+      .tile {
+        position: absolute;
+        transition: transform var(--duration) ease-in-out;
+      }
+
+      .tile__inner {
+        background-color: green;
+      }
+
+      .tile-1-1 {
+        transform: translate(var(--gap), var(--gap));
+      }
+
+      .tile-1-3 {
+        transform: translate(
+          calc(3 * var(--gap) + 2 * var(--width)),
+          var(--gap)
+        );
+      }
+
+      .tile-1-4 {
+        transform: translate(
+          calc(4 * var(--gap) + 3 * var(--width)),
+          var(--gap)
+        );
+      }
+
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: scale(0);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .tile--2 .tile__inner {
+        background-color: orange;
+      }
+
+      .tile--4 .tile__inner {
+        background-color: cyan;
+      }
+
+      .tile--new .tile__inner {
+        animation: appear 200ms ease 100ms;
+        animation-fill-mode: backwards;
+      }
+
+      .tile--merged .tile__inner {
+        animation: pop calc(2 * var(--duration)) var(--duration) ease;
+        animation-fill-mode: backwards;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <div class="tile tile-1-1 tile--2 tile--new">
+        <div class="tile__inner"></div>
+      </div>
+      <div class="tile tile-1-3 tile--2 tile--new">
+        <div class="tile__inner"></div>
+      </div>
+    </div>
+
+    <p>
+      <button id="merge">Merge</button>
+    </p>
+
+    <script>
+      const row = document.querySelector('.row');
+      const tileA = document.querySelector('.tile-1-1');
+      const tileB = document.querySelector('.tile-1-3');
+      const merge = document.getElementById('merge');
+
+      merge.addEventListener('click', () => {
+        tileA.classList.replace('tile-1-1', 'tile-1-4');
+        tileA.classList.replace('tile--new', 'tile--used');
+        tileB.classList.replace('tile-1-3', 'tile-1-4');
+        tileB.classList.replace('tile--new', 'tile--used');
+
+        const tile = document.createElement('div');
+        tile.setAttribute('class', 'tile tile-1-4 tile--4 tile--merged');
+        const tileInner = document.createElement('div');
+        tileInner.setAttribute('class', 'tile__inner');
+
+        tile.appendChild(tileInner);
+        row.appendChild(tile);
+      });
+    </script>
+  </body>
+</html>

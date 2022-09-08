@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Merge</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --width: 100px;
+        --height: 100px;
+        --gap: 20px;
+        --duration: 2000ms;
+      }
+
+      .row {
+        width: calc(5 * var(--gap) + 4 * var(--width));
+        height: calc(2 * var(--gap) + var(--height));
+        background-color: grey;
+      }
+
+      .tile, .tile__inner {
+        width: var(--width);
+        height: var(--height);
+      }
+
+      .tile {
+        position: absolute;
+        transition: transform var(--duration) ease-in-out;
+      }
+
+      .tile__inner {
+        background-color: green;
+      }
+
+      .tile-1-1 {
+        transform: translate(var(--gap), var(--gap));
+      }
+
+      .tile-1-3 {
+        transform: translate(
+          calc(3 * var(--gap) + 2 * var(--width)),
+          var(--gap)
+        );
+      }
+
+      .tile-1-4 {
+        transform: translate(
+          calc(4 * var(--gap) + 3 * var(--width)),
+          var(--gap)
+        );
+      }
+
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: scale(0);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .tile--2 .tile__inner {
+        background-color: orange;
+      }
+
+      .tile--4 .tile__inner {
+        background-color: cyan;
+      }
+
+      .tile--new .tile__inner {
+        animation: appear 200ms ease 100ms;
+        animation-fill-mode: backwards;
+      }
+
+      .tile--merged .tile__inner {
+        animation: pop calc(2 * var(--duration)) var(--duration) ease;
+        animation-fill-mode: backwards;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="/app.js"></script>
+    <script>
+      Elm.Main.init({
+        node: document.getElementById('app')
+      });
+    </script>
+  </body>
+</html>

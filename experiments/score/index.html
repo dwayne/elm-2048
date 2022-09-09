@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Score</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .score {
+        display: inline-block;
+        border-radius: 3px;
+        padding: 10px 15px;
+        text-align: center;
+        font-weight: bold;
+        background-color: #bbada0;
+      }
+
+      .score__title {
+        font-size: 13px;
+        text-transform: uppercase;
+        color: #eee4da;
+
+        margin-bottom: 2px;
+      }
+
+      .score__total {
+        font-size: 25px;
+        position: relative;
+        /* outline: 1px solid pink; */
+      }
+
+      .score__current {
+        color: white;
+      }
+
+      .score__delta {
+        color: rgba(119, 110, 101, 0.9);
+
+        position: absolute;
+        left: 0;
+        right: 0;
+
+        animation: move-up 600ms ease-in;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes move-up {
+        0% {
+          top: 0;
+          opacity: 1;
+        }
+        100% {
+          top: -75px;
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="/app.js"></script>
+    <script>
+      Elm.Main.init({
+        node: document.getElementById('app')
+      });
+    </script>
+  </body>
+</html>

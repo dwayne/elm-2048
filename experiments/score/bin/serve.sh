@@ -1,0 +1,5 @@
+set -e
+
+port="${1:-8000}"
+
+caddy file-server --browse --root . --listen :"$port"

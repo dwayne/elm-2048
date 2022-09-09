@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "devDependencies": {
+    "sass": "^1.54.9"
+  }
+}

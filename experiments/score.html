@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Score</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .score {
+        display: inline-block;
+        border-radius: 3px;
+        padding: 10px 15px;
+        text-align: center;
+        font-weight: bold;
+        background-color: #bbada0;
+      }
+
+      .score__title {
+        font-size: 13px;
+        text-transform: uppercase;
+        color: #eee4da;
+
+        margin-bottom: 2px;
+      }
+
+      .score__total {
+        font-size: 25px;
+        position: relative;
+        /* outline: 1px solid pink; */
+      }
+
+      .score__current {
+        color: white;
+      }
+
+      .score__delta {
+        color: rgba(119, 110, 101, 0.9);
+
+        position: absolute;
+        left: 0;
+        right: 0;
+
+        animation: move-up 600ms ease-in;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes move-up {
+        0% {
+          top: 0;
+          opacity: 1;
+        }
+        100% {
+          top: -75px;
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Scoring</h1>
+
+    <h2>Score</h2>
+
+    <p>This is a work in progress.</p>
+
+    <div class="score">
+      <div class="score__title">Score</div>
+      <div class="score__total">
+        <span class="score__current">10000000</span>
+      </div>
+    </div>
+
+    <p>
+      <button id="add4">+4</button>
+    </p>
+    <script>
+      // Question: Does this approach work in Elm?
+
+      const scoreTotal = document.querySelector('.score__total');
+      const add4 = document.getElementById('add4');
+
+      add4.addEventListener('click', () => {
+        let scoreDelta = document.querySelector('.score__delta');
+        if (scoreDelta) {
+          scoreTotal.removeChild(scoreDelta);
+        }
+        scoreDelta = document.createElement('div');
+        scoreDelta.classList.add('score__delta');
+        scoreDelta.textContent = '+40';
+
+        scoreTotal.appendChild(scoreDelta);
+      });
+    </script>
+
+    <h2>Best</h2>
+
+    <div class="score">
+      <div class="score__title">Best</div>
+      <div class="score__total">
+        <span class="score__current">500</span>
+      </div>
+    </div>
+  </body>
+</html>

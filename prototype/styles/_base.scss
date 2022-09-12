@@ -1,14 +1,19 @@
+@use "colors";
+@use "fonts";
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-$floralWhite: #faf8ef;
-$sandstone: #776e65;
+:root {
+  font-size: 1em;
+  line-height: 1.5;
+}
 
 body {
-  font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
-  background-color: $floralWhite;
-  color: $sandstone;
+  font-family: fonts.$clearSans;
+  background-color: colors.$floralWhite;
+  color: colors.$sandstone;
 }

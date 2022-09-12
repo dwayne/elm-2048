@@ -1,7 +1,3 @@
 @use "fonts";
-@use "tile";
-
-
-body {
-  font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
-}
+@use "base";
+@use "title";

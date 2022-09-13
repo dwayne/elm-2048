@@ -1,0 +1,7 @@
+@use "colors";
+
+.separator {
+  border: 0;
+  border-bottom: 1px solid colors.$gallery;
+  margin: 30px 0;
+}

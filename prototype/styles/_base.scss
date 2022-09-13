@@ -8,12 +8,19 @@
 }
 
 :root {
-  font-size: 1em;
+  font-size: 18px;
   line-height: 1.5;
 }
 
 body {
   font-family: fonts.$clearSans;
   background-color: colors.$floralWhite;
+  color: colors.$sandstone;
+}
+
+a {
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
   color: colors.$sandstone;
 }

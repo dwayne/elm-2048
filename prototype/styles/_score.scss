@@ -2,11 +2,10 @@
 @use "colors";
 
 .score {
-  font-size: 1rem;
   line-height: 1;
 
   display: inline-block;
-  min-width: 5em;
+  min-width: 80px;
 
   border-radius: 3px;
   padding: 8px 10px;
@@ -20,13 +19,13 @@
 .score__title {
   margin: 0;
   margin-bottom: 2px;
-  font-size: 0.8125em;
+  font-size: 13px;
   text-transform: uppercase;
   color: colors.$springWood;
 }
 
 .score__total {
-  font-size: 1.5625em;
+  font-size: 25px;
   position: relative;
 }
 

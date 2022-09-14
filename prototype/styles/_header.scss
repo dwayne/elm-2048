@@ -1,4 +1,15 @@
 .header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.header__item:first-child {
+  margin-right: 20px;
+}
+
+@media screen and (min-width: 520px) {
+  .header {
+    align-items: initial;
+  }
 }

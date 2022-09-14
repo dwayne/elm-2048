@@ -8,7 +8,13 @@
     <link rel="stylesheet" href="/index.css">
     <style>
       .box {
-        width: 500px;
+        width: 280px;
+      }
+
+      @media screen and (min-width: 520px) {
+        .box {
+          width: 500px;
+        }
       }
     </style>
   </head>
@@ -19,12 +25,12 @@
 
     <div class="box">
       <header class="header">
-        <div class="header__title">
+        <div class="header__item">
           <h1 class="title">2048</h1>
         </div>
-        <div class="header__scores">
-          <div class="score-container">
-            <div class="score-container__score">
+        <div class="header__item">
+          <div class="score-card">
+            <div class="score-card__score">
               <div class="score">
                 <h2 class="score__title">Score</h2>
                 <div class="score__total">
@@ -32,7 +38,7 @@
                 </div>
               </div>
             </div>
-            <div class="score-container__score">
+            <div class="score-card__score">
               <div class="score">
                 <h2 class="score__title">Best</h2>
                 <div class="score__total">
@@ -53,21 +59,21 @@
           <h1 class="title">2048</h1>
         </div>
         <div class="header__item">
-          <div class="score-container">
-            <div class="score-container__score">
+          <div class="score-card">
+            <div class="score-card__score">
               <div class="score">
                 <h2 class="score__title">Score</h2>
                 <div class="score__total">
-                  <div class="score__value">128</div>
+                  <div class="score__value">16</div>
                   <div class="score__delta">+4</div>
                 </div>
               </div>
             </div>
-            <div class="score-container__score">
+            <div class="score-card__score">
               <div class="score">
                 <h2 class="score__title">Best</h2>
                 <div class="score__total">
-                  <div class="score__value">1048576</div>
+                  <div class="score__value">512</div>
                 </div>
               </div>
             </div>
@@ -84,8 +90,39 @@
           <h1 class="title">2048</h1>
         </div>
         <div class="header__item">
-          <div class="score-container">
-            <div class="score-container__score">
+          <div class="score-card">
+            <div class="score-card__score">
+              <div class="score">
+                <h2 class="score__title">Score</h2>
+                <div class="score__total">
+                  <div class="score__value">128</div>
+                  <div class="score__delta">+4</div>
+                </div>
+              </div>
+            </div>
+            <div class="score-card__score">
+              <div class="score">
+                <h2 class="score__title">Best</h2>
+                <div class="score__total">
+                  <div class="score__value">1048576</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+    </div>
+
+    <h2>Example 4</h2>
+
+    <div class="box">
+      <header class="header">
+        <div class="header__item">
+          <h1 class="title">2048</h1>
+        </div>
+        <div class="header__item">
+          <div class="score-card">
+            <div class="score-card__score">
               <div class="score">
                 <h2 class="score__title">Score</h2>
                 <div class="score__total">
@@ -94,7 +131,7 @@
                 </div>
               </div>
             </div>
-            <div class="score-container__score">
+            <div class="score-card__score">
               <div class="score">
                 <h2 class="score__title">Best</h2>
                 <div class="score__total">

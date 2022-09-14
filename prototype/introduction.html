@@ -8,8 +8,13 @@
     <link rel="stylesheet" href="/index.css">
     <style>
       .box {
-        min-width: 280px;
-        max-width: 500px;
+        width: 280px;
+      }
+
+      @media screen and (min-width: 520px) {
+        .box {
+          width: 500px;
+        }
       }
     </style>
   </head>
@@ -19,7 +24,7 @@
     <div class="box">
       <div class="introduction">
         <div class="introduction__item">
-          <p class="p">Join the numbers and get to the <strong>2048 tile!</strong></p>
+          <p class="p">Join the numbers and get to the <strong>2048&nbsp;tile!</strong></p>
         </div>
         <div class="introduction__item">
           <button class="button">New Game</button>

@@ -2,14 +2,11 @@
 @use "colors";
 
 .grid__background {
-  // width: 500px;
-  // height: 500px;
   width: 280px;
   height: 280px;
 
   border-radius: 6px;
   padding: 10px;
-  // padding: 15px;
 
   background-color: colors.$silk;
 }
@@ -20,11 +17,23 @@
 
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  // gap: 15px;
   gap: 10px;
 }
 
 .grid__cell {
   border-radius: 3px;
   background-color: color.change(colors.$springWood, $alpha: 0.35);
+}
+
+@media screen and (min-width: 520px) {
+  .grid__background {
+    width: 500px;
+    height: 500px;
+
+    padding: 15px;
+  }
+
+  .grid__cells {
+    gap: 15px;
+  }
 }

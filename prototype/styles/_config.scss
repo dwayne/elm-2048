@@ -1,0 +1,19 @@
+:root {
+  --tile-size: 58px;
+  --tile-font-size1: 35px;
+  --tile-font-size2: 25px;
+  --tile-font-size3: 15px;
+  --tile-font-size4: 15px;
+  --tile-font-size5: 13px;
+}
+
+@media screen and (min-width: 520px) {
+  :root {
+    --tile-size: 107px;
+    --tile-font-size1: 55px;
+    --tile-font-size2: 45px;
+    --tile-font-size3: 35px;
+    --tile-font-size4: 30px;
+    --tile-font-size5: 25px;
+  }
+}

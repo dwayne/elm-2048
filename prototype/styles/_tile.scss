@@ -1,0 +1,150 @@
+@use "sass:color";
+@use "sass:list";
+@use "sass:math";
+@use "colors";
+
+// TODO:
+// x Calculate tile properties.
+// - Add pop animation.
+// - Add .tile--composite.
+
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 3px;
+
+  font-size: var(--tile-font-size1);
+  font-weight: bold;
+  background-color: colors.$tile;
+}
+
+@mixin tiles($useOriginalBackgroundColors: true) {
+  // NOTE: The background colors that's generated are different from the
+  // original implementation.
+  //
+  // As far as I can tell, I'm using the same colors and calculations
+  // as the original implementation. The only difference is that I'm using
+  // an updated version of Sass.
+  //
+  // Could it be the mix function?
+  //
+  // So I ran my version of Sass over the original implementation's
+  // main.scss and our values coincided. This means that our calculations
+  // are the same. Furthermore, it means that the values differ from the
+  // original implementation because the original implementation used
+  // a different version of Sass.
+  //
+  // What version of Sass was used?
+  // How did the mix function change from then to now?
+  //
+  // A hack: Since I want the clone to be as close to the original
+  // implementation as possible I added the $useOriginalBackgroundColors
+  // parameter to skip the background color calculations and just use the
+  // original background colors.
+
+  $base: 2;
+  $exponent: 1;
+
+  $settings:
+    #eee4da false false,                    // 2
+    #ede0c8 false false,                    // 4
+    #f2b179 colors.$seaBuckthorn true,      // 8
+    #f59563 colors.$outrageousOrange true,  // 16
+    #f67c5f colors.$redOrange true,         // 32
+    #f65e3b colors.$red true,               // 64
+    #edcf72 false true,                     // 128
+    #edcc61 false true,                     // 256
+    #edc850 false true,                     // 512
+    #edc53f false true,                     // 1024
+    #edc22e false true;                     // 2048
+
+  $limit: list.length($settings);
+
+  @each $originalBackgroundColor, $specialBackgroundColor, $useBrightColor in $settings {
+    $power: math.pow($base, $exponent);
+
+    .tile--#{$power} {
+      // Set background-color
+      $backgroundColor: $originalBackgroundColor;
+      @if not $useOriginalBackgroundColors {
+        $goldPercent: math.div($exponent - 1, $limit - 1) * 100;
+        $backgroundColor: color.mix(colors.$tileGold, colors.$tile, $goldPercent);
+
+        @if $specialBackgroundColor {
+          $backgroundColor: color.mix($specialBackgroundColor, $backgroundColor, 55%);
+        }
+      }
+      background-color: $backgroundColor;
+      // @debug $backgroundColor;
+
+      // Set box-shadow
+      @if not $specialBackgroundColor and $exponent > 4 {
+        $glowOpacity: math.div($exponent - 4, $limit - 4);
+
+        box-shadow:
+          0 0 30px 10px rgba(colors.$tileGoldGlow, math.div($glowOpacity, 1.8)),
+          inset 0 0 0 1px rgba(colors.$white, math.div($glowOpacity, 3));
+      }
+
+      // Set color
+      @if $useBrightColor {
+        color: colors.$textBright;
+      }
+
+      // Set font-size
+      @if $power >= 100 and $power < 1000 {
+        font-size: var(--tile-font-size2);
+      } @else if $power >= 1000 {
+        font-size: var(--tile-font-size3);
+      }
+    }
+
+    $exponent: $exponent + 1;
+  }
+}
+
+@include tiles;
+
+%super {
+  background-color: colors.$tileSuper;
+  color: colors.$textBright;
+}
+
+// 2^12, 2^13
+.tile--super-1 {
+  @extend %super;
+  font-size: var(--tile-font-size3);
+}
+
+// 2^14, 2^15, 2^16
+.tile--super-2 {
+  @extend %super;
+  font-size: var(--tile-font-size4);
+}
+
+// > 2^16
+.tile--super-3 {
+  @extend %super;
+  font-size: var(--tile-font-size5);
+}
+
+.tile--new {
+  animation: appear 200ms ease 100ms;
+  animation-fill-mode: backwards;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

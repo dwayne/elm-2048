@@ -7,21 +7,19 @@
   box-sizing: border-box;
 }
 
-:root {
+body {
+  font-family: fonts.$clearSans;
   font-size: 15px;
   line-height: 1.5;
+
+  background-color: colors.$floralWhite2;
+  color: colors.$sandstone;
 }
 
 @media screen and (min-width: 520px) {
-  :root {
+  body {
     font-size: 18px;
   }
-}
-
-body {
-  font-family: fonts.$clearSans;
-  background-color: colors.$floralWhite2;
-  color: colors.$sandstone;
 }
 
 a {

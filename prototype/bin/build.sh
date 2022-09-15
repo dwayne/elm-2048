@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-npx sass styles/index.scss index.css
+sass="$PROTOTYPE/node_modules/.bin/sass"
+
+"$sass" "$PROTOTYPE/styles/index.scss" "$PROTOTYPE/index.css"

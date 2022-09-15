@@ -7,4 +7,7 @@ pkgs.mkShell {
     pkgs.caddy
     pkgs.nodejs-16_x
   ];
+
+  PROJECT = builtins.toString ./.;
+  PROTOTYPE = builtins.toString ./prototype;
 }

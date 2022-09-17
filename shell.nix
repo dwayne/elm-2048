@@ -5,12 +5,14 @@
 pkgs.mkShell {
   buildInputs = [
     pkgs.caddy
+    pkgs.elmPackages.elm
     pkgs.nodePackages.sass
   ];
 
   shellHook =
     ''
     export project=${builtins.toString ./.}
-    export prototype=$project/prototype
+    export experiments="$project/experiments"
+    export prototype="$project/prototype"
     '';
 }

@@ -1,5 +1,5 @@
-set -e
+#!/usr/bin/env bash
 
 port="${1:-8000}"
 
-caddy file-server --browse --root . --listen :"$port"
+caddy file-server --browse --root "$experiments/merge" --listen :"$port"

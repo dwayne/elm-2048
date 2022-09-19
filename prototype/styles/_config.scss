@@ -1,13 +1,17 @@
 :root {
-  --tile-size: 57.5px;
+  // Grid
+
+  --grid-size: 280px;
+  --grid-gap: 10px;
+  --tile-size: calc((var(--grid-size) - 5 * var(--grid-gap)) / 4);
+
+  // Tile font sizes
+
   --tile-font-size1: 35px;
   --tile-font-size2: 25px;
   --tile-font-size3: 15px;
   --tile-font-size4: 15px;
   --tile-font-size5: 13px;
-
-  --grid-gap: 10px;
-  --grid-size: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
 
   // Animation
 
@@ -25,13 +29,17 @@
 
 @media screen and (min-width: 520px) {
   :root {
-    --tile-size: 106.25px;
+    // Grid
+
+    --grid-size: 500px;
+    --grid-gap: 15px;
+
+    // Tile font sizes
+
     --tile-font-size1: 55px;
     --tile-font-size2: 45px;
     --tile-font-size3: 35px;
     --tile-font-size4: 30px;
     --tile-font-size5: 25px;
-
-    --grid-gap: 15px;
   }
 }

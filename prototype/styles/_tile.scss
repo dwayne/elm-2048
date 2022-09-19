@@ -129,12 +129,17 @@
 }
 
 .tile--new {
-  animation: appear var(--tile-animation-duration) var(--tile-animation-delay) ease;
+  animation: appear var(--tile-appear-duration) var(--tile-appear-delay) ease;
   animation-fill-mode: backwards;
 }
 
+.tile--merged {
+  animation: disappear var(--tile-disappear-duration) var(--tile-disappear-delay) ease;
+  animation-fill-mode: both;
+}
+
 .tile--composite {
-  animation: pop var(--tile-animation-duration) var(--tile-animation-delay) ease;
+  animation: pop var(--tile-pop-duration) var(--tile-pop-delay) ease;
   animation-fill-mode: backwards;
 }
 
@@ -146,6 +151,17 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes disappear {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0);
   }
 }
 

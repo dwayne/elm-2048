@@ -5,12 +5,22 @@
   --tile-font-size3: 15px;
   --tile-font-size4: 15px;
   --tile-font-size5: 13px;
-  --tile-animation-duration: 200ms;
-  --tile-animation-delay: 100ms;
 
   --grid-gap: 10px;
   --grid-size: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
-  --grid-tile-transition-duration: var(--tile-animation-delay);
+
+  // Animation
+
+  --tile-appear-duration: 200ms;
+  --tile-appear-delay: 100ms;
+
+  --grid-tile-move-duration: 100ms;
+
+  --tile-pop-duration: 200ms;
+  --tile-pop-delay: var(--grid-tile-move-duration);
+
+  --tile-disappear-duration: var(--tile-pop-duration);
+  --tile-disappear-delay: var(--grid-tile-move-duration);
 }
 
 @media screen and (min-width: 520px) {

@@ -216,13 +216,13 @@
           </div>
           <div class="grid__tiles">
             <div class="grid__tile grid__tile--1-1">
-              <div class="tile tile--4 tile--new">
-                <div class="tile__value">4</div>
+              <div class="tile tile--2048 tile--new">
+                <div class="tile__value">2048</div>
               </div>
             </div>
             <div class="grid__tile grid__tile--1-2">
-              <div class="tile tile--4 tile--new">
-                <div class="tile__value">4</div>
+              <div class="tile tile--2048 tile--new">
+                <div class="tile__value">2048</div>
               </div>
             </div>
           </div>
@@ -232,8 +232,8 @@
       <p>
         <template id="tile-template">
           <div class="grid__tile grid__tile--1-4">
-            <div class="tile tile--8 tile--composite">
-              <div class="tile__value">8</div>
+            <div class="tile tile--super-1 tile--composite">
+              <div class="tile__value">4096</div>
             </div>
           </div>
         </template>
@@ -245,6 +245,7 @@
       const jsMerge = document.getElementById('js-merge');
       const tile1 = jsMerge.querySelector('.grid__tile--1-1');
       const tile2 = jsMerge.querySelector('.grid__tile--1-2');
+      const newTiles = jsMerge.querySelectorAll('.tile--new');
 
       const tileTemplate = document.getElementById('tile-template');
       const gridTiles = jsMerge.querySelector('.grid__tiles');
@@ -254,6 +255,9 @@
       mergeButton.addEventListener('click', () => {
         tile1.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
         tile2.classList.replace('grid__tile--1-2', 'grid__tile--1-4');
+        newTiles.forEach(tile => {
+          tile.classList.replace('tile--new', 'tile--merged');
+        });
         gridTiles.appendChild(tileTemplate.content);
       });
     </script>

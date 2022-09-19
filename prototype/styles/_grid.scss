@@ -31,7 +31,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  transition: transform var(--grid-tile-transition-duration) ease-in-out;
+  transition: transform var(--grid-tile-move-duration) ease-in-out;
 }
 
 @for $r from 1 through 4 {

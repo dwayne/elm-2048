@@ -1,5 +1,5 @@
 :root {
-  --tile-size: 58px;
+  --tile-size: 57.5px;
   --tile-font-size1: 35px;
   --tile-font-size2: 25px;
   --tile-font-size3: 15px;
@@ -7,15 +7,21 @@
   --tile-font-size5: 13px;
   --tile-animation-duration: 200ms;
   --tile-animation-delay: 100ms;
+
+  --grid-gap: 10px;
+  --grid-size: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
+  --grid-tile-transition-duration: var(--tile-animation-delay);
 }
 
 @media screen and (min-width: 520px) {
   :root {
-    --tile-size: 107px;
+    --tile-size: 106.25px;
     --tile-font-size1: 55px;
     --tile-font-size2: 45px;
     --tile-font-size3: 35px;
     --tile-font-size4: 30px;
     --tile-font-size5: 25px;
+
+    --grid-gap: 15px;
   }
 }

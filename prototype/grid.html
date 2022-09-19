@@ -10,6 +10,8 @@
   <body>
     <h1>Grid</h1>
 
+    <h2>Empty</h2>
+
     <div class="grid">
       <div class="grid__background">
         <div class="grid__cells">
@@ -32,5 +34,228 @@
         </div>
       </div>
     </div>
+
+    <h2>Full</h2>
+
+    <div class="grid">
+      <div class="grid__background">
+        <div class="grid__cells">
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+          <div class="grid__cell"></div>
+        </div>
+        <div class="grid__tiles">
+          <div class="grid__tile grid__tile--1-1">
+            <div class="tile tile--2 tile--new">
+              <div class="tile__value">2</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--1-2">
+            <div class="tile tile--4 tile--new">
+              <div class="tile__value">4</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--1-3">
+            <div class="tile tile--8 tile--new">
+              <div class="tile__value">8</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--1-4">
+            <div class="tile tile--16 tile--new">
+              <div class="tile__value">16</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--2-1">
+            <div class="tile tile--32 tile--new">
+              <div class="tile__value">32</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--2-2">
+            <div class="tile tile--64 tile--new">
+              <div class="tile__value">64</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--2-3">
+            <div class="tile tile--128 tile--new">
+              <div class="tile__value">128</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--2-4">
+            <div class="tile tile--256 tile--new">
+              <div class="tile__value">256</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--3-1">
+            <div class="tile tile--512 tile--new">
+              <div class="tile__value">512</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--3-2">
+            <div class="tile tile--1024 tile--new">
+              <div class="tile__value">1024</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--3-3">
+            <div class="tile tile--2048 tile--new">
+              <div class="tile__value">2048</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--3-4">
+            <div class="tile tile--super-1 tile--new">
+              <div class="tile__value">4096</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--4-1">
+            <div class="tile tile--super-2 tile--new">
+              <div class="tile__value">16384</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--4-2">
+            <div class="tile tile--super-3 tile--new">
+              <div class="tile__value">131072</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--4-3">
+            <div class="tile tile--2 tile--new">
+              <div class="tile__value">2</div>
+            </div>
+          </div>
+          <div class="grid__tile grid__tile--4-4">
+            <div class="tile tile--4 tile--new">
+              <div class="tile__value">4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Move</h2>
+
+    <style>
+      #js-move {
+        --tile-animation-duration: 2000ms;
+      }
+    </style>
+    <div id="js-move">
+      <div class="grid">
+        <div class="grid__background">
+          <div class="grid__cells">
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+          </div>
+          <div class="grid__tiles">
+            <div class="grid__tile grid__tile--1-1">
+              <div class="tile tile--2 tile--new">
+                <div class="tile__value">2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const jsMove = document.getElementById('js-move');
+      const tile = jsMove.querySelector('.grid__tile');
+
+      window.setTimeout(() => {
+        window.requestAnimationFrame(() => {
+          tile.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
+        });
+      }, 2100);
+    </script>
+
+    <h2>Merge</h2>
+
+    <div id="js-merge">
+      <div class="grid">
+        <div class="grid__background">
+          <div class="grid__cells">
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+          </div>
+          <div class="grid__tiles">
+            <div class="grid__tile grid__tile--1-1">
+              <div class="tile tile--4 tile--new">
+                <div class="tile__value">4</div>
+              </div>
+            </div>
+            <div class="grid__tile grid__tile--1-2">
+              <div class="tile tile--4 tile--new">
+                <div class="tile__value">4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        <template id="tile-template">
+          <div class="grid__tile grid__tile--1-4">
+            <div class="tile tile--8 tile--composite">
+              <div class="tile__value">8</div>
+            </div>
+          </div>
+        </template>
+        <button id="merge">Merge</button>
+      </p>
+    </div>
+
+    <script>
+      const jsMerge = document.getElementById('js-merge');
+      const tile1 = jsMerge.querySelector('.grid__tile--1-1');
+      const tile2 = jsMerge.querySelector('.grid__tile--1-2');
+
+      const tileTemplate = document.getElementById('tile-template');
+      const gridTiles = jsMerge.querySelector('.grid__tiles');
+
+      const mergeButton = document.getElementById('merge');
+
+      mergeButton.addEventListener('click', () => {
+        tile1.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
+        tile2.classList.replace('grid__tile--1-2', 'grid__tile--1-4');
+        gridTiles.appendChild(tileTemplate.content);
+      });
+    </script>
   </body>
 </html>

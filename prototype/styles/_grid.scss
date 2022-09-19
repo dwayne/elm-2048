@@ -2,11 +2,13 @@
 @use "colors";
 
 .grid__background {
-  width: 280px;
-  height: 280px;
+  position: relative;
+
+  width: var(--grid-size);
+  height: var(--grid-size);
 
   border-radius: 6px;
-  padding: 10px;
+  padding: var(--grid-gap);
 
   background-color: colors.$silk;
 }
@@ -17,7 +19,7 @@
 
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: var(--grid-gap);
 }
 
 .grid__cell {
@@ -25,15 +27,20 @@
   background-color: color.change(colors.$springWood, $alpha: 0.35);
 }
 
-@media screen and (min-width: 520px) {
-  .grid__background {
-    width: 500px;
-    height: 500px;
+.grid__tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform var(--grid-tile-transition-duration) ease-in-out;
+}
 
-    padding: 15px;
-  }
-
-  .grid__cells {
-    gap: 15px;
+@for $r from 1 through 4 {
+  @for $c from 1 through 4 {
+    .grid__tile--#{$r}-#{$c} {
+      transform: translate(
+        calc($c * var(--grid-gap) + ($c - 1) * var(--tile-size)),
+        calc($r * var(--grid-gap) + ($r - 1) * var(--tile-size))
+      );
+    }
   }
 }

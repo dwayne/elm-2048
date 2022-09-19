@@ -8,13 +8,17 @@
     <link rel="stylesheet" href="/index.css">
     <style>
       .box {
-        margin-top: 0.5em;
-        margin-bottom: 0.5em;
+        --tile-animation-duration: 2000ms;
+
+        display: inline-block;
+        padding: 0.5em;
       }
     </style>
   </head>
   <body>
     <h1>Tile</h1>
+
+    <h2>New Tile</h2>
 
     <div class="box">
       <div class="tile tile--2 tile--new">
@@ -97,6 +101,14 @@
     <div class="box">
       <div class="tile tile--super-3 tile--new">
         <div class="tile__value">131072</div>
+      </div>
+    </div>
+
+    <h2>Composite Tile</h2>
+
+    <div class="box">
+      <div class="tile tile--64 tile--composite">
+        <div class="tile__value">64</div>
       </div>
     </div>
   </body>

@@ -129,12 +129,12 @@
 }
 
 .tile--new {
-  animation: appear 200ms 100ms ease;
+  animation: appear var(--tile-animation-duration) var(--tile-animation-delay) ease;
   animation-fill-mode: backwards;
 }
 
 .tile--composite {
-  animation: pop 200ms 100ms ease;
+  animation: pop var(--tile-animation-duration) var(--tile-animation-delay) ease;
   animation-fill-mode: backwards;
 }
 

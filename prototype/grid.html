@@ -146,7 +146,7 @@
 
     <style>
       #js-move {
-        --tile-animation-duration: 2000ms;
+        --grid-tile-move-duration: 2000ms;
       }
     </style>
     <div id="js-move">
@@ -185,10 +185,8 @@
       const tile = jsMove.querySelector('.grid__tile');
 
       window.setTimeout(() => {
-        window.requestAnimationFrame(() => {
-          tile.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
-        });
-      }, 2100);
+        tile.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
+      }, 1000);
     </script>
 
     <h2>Merge</h2>

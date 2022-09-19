@@ -3,11 +3,6 @@
 @use "sass:math";
 @use "colors";
 
-// TODO:
-// x Calculate tile properties.
-// - Add pop animation.
-// - Add .tile--composite.
-
 .tile {
   width: var(--tile-size);
   height: var(--tile-size);
@@ -134,7 +129,12 @@
 }
 
 .tile--new {
-  animation: appear 200ms ease 100ms;
+  animation: appear 200ms 100ms ease;
+  animation-fill-mode: backwards;
+}
+
+.tile--composite {
+  animation: pop 200ms 100ms ease;
   animation-fill-mode: backwards;
 }
 
@@ -145,6 +145,18 @@
   }
   to {
     opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
     transform: scale(1);
   }
 }

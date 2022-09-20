@@ -228,15 +228,16 @@
       </div>
 
       <p>
-        <template id="tile-template">
-          <div class="grid__tile grid__tile--1-4">
-            <div class="tile tile--super-1 tile--composite">
-              <div class="tile__value">4096</div>
-            </div>
-          </div>
-        </template>
         <button id="merge">Merge</button>
       </p>
+
+      <template id="tile-template">
+        <div class="grid__tile grid__tile--1-4">
+          <div class="tile tile--super-1 tile--composite">
+            <div class="tile__value">4096</div>
+          </div>
+        </div>
+      </template>
     </div>
 
     <script>
@@ -257,6 +258,103 @@
           tile.classList.replace('tile--new', 'tile--merged');
         });
         gridTiles.appendChild(tileTemplate.content);
+      });
+    </script>
+
+    <h2>Message</h2>
+
+    <div id="js-message">
+      <div class="grid">
+        <div class="grid__background">
+          <div class="grid__cells">
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+            <div class="grid__cell"></div>
+          </div>
+          <div class="grid__tiles">
+            <div class="grid__tile grid__tile--1-1">
+              <div class="tile tile--2 tile--new">
+                <div class="tile__value">2</div>
+              </div>
+            </div>
+            <div class="grid__tile grid__tile--1-4">
+              <div class="tile tile--4 tile--new">
+                <div class="tile__value">4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        <button id="lose">Lose</button>
+        <button id="win">Win</button>
+      </p>
+
+      <template id="lose-template">
+        <div class="grid__message">
+          <div class="message">
+            <h2 class="message__title">Game over!</h2>
+            <div class="message__controls">
+              <div class="message__button">
+                <button class="button">Try again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template id="win-template">
+        <div class="grid__message">
+          <div class="message message--success">
+            <h2 class="message__title">You win!</h2>
+            <div class="message__controls">
+              <div class="message__button">
+                <button class="button">Keep going</button>
+              </div>
+              <div class="message__button">
+                <button class="button">Try again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+    <script>
+      const jsMessage = document.getElementById('js-message');
+      const loseTemplate = document.getElementById('lose-template');
+      const winTemplate = document.getElementById('win-template');
+      const gridBackground = jsMessage.querySelector('.grid__background');
+
+      const loseButton = document.getElementById('lose');
+      const winButton = document.getElementById('win');
+
+      const clear = () => {
+        const gridMessage = gridBackground.querySelector('.grid__message');
+        if (gridMessage) { gridBackground.removeChild(gridMessage); }
+      };
+
+      loseButton.addEventListener('click', () => {
+        clear();
+        gridBackground.appendChild(loseTemplate.cloneNode(true).content);
+      });
+
+      winButton.addEventListener('click', () => {
+        clear();
+        gridBackground.appendChild(winTemplate.cloneNode(true).content);
       });
     </script>
   </body>

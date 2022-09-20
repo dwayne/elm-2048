@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Message</title>
+
+    <link rel="stylesheet" href="/index.css">
+    <style>
+      .box {
+        width: 280px;
+        height: 280px;
+      }
+
+      @media screen and (min-width: 520px) {
+        .box {
+          width: 500px;
+          height: 500px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Message</h1>
+
+    <h2>Game Over</h2>
+
+    <div class="box">
+      <div class="message">
+        <h2 class="message__title">Game over!</h2>
+        <div class="message__controls">
+          <div class="message__button">
+            <button class="button">Try again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Win</h2>
+
+    <div class="box">
+      <div class="message message--success">
+        <h2 class="message__title">You win!</h2>
+        <div class="message__controls">
+          <div class="message__button">
+            <button class="button">Keep going</button>
+          </div>
+          <div class="message__button">
+            <button class="button">Try again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

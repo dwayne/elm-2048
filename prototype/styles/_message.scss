@@ -1,0 +1,58 @@
+@use "sass:color";
+@use "colors";
+
+.message {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 6px;
+  background-color: color.change(colors.$springWood, $alpha: 0.5);
+
+  animation: fade-in var(--message-fade-in-duration) var(--message-fade-in-delay) ease;
+  animation-fill-mode: backwards;
+}
+
+.message__title {
+  font-size: 30px;
+  font-weight: bold;
+
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+
+.message__controls {
+  display: flex;
+}
+
+.message__button:not(:last-child) {
+  margin-right: 9px;
+}
+
+.message--success {
+  background-color: color.change(colors.$brightSun, $alpha: 0.5);
+}
+
+.message--success .message__title {
+  color: colors.$floralWhite1;
+}
+
+@media screen and (min-width: 520px) {
+  .message__title {
+    font-size: 60px;
+    margin-bottom: 60px;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

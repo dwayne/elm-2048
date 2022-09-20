@@ -25,6 +25,9 @@
 
   --tile-disappear-duration: var(--tile-pop-duration);
   --tile-disappear-delay: var(--grid-tile-move-duration);
+
+  --message-fade-in-duration: 800ms;
+  --message-fade-in-delay: 1200ms;
 }
 
 @media screen and (min-width: 520px) {

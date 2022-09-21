@@ -39,8 +39,7 @@ addDelta points (State state) =
   State
     { state
     | currentId = state.currentId + 1
-    -- NOTE: The following can be improved by using a queue.
-    , deltas = state.delta ++ [(state.currentId, points)]
+    , deltas = state.deltas ++ [(state.currentId, points)]
     }
 
 
@@ -52,7 +51,7 @@ update : Msg -> State -> State
 update msg (State state) =
   case msg of
     AnimationEnded ->
-      State { state | deltas = Maybe.withDefault [] <| List.tail deltas }
+      State { state | deltas = Maybe.withDefault [] <| List.tail state.deltas }
 
 
 view : String -> Points -> State -> H.Html Msg

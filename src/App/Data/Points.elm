@@ -1,9 +1,6 @@
 module App.Data.Points exposing
-  ( Points
-  , zero, fromInt
-
+  ( Points, zero, fromInt
   , add, max
-
   , toString
   )
 

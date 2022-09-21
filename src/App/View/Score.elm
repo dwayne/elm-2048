@@ -1,11 +1,8 @@
 module App.View.Score exposing
-  ( State
-  , init
-
+  ( State, init
   , addDelta
 
-  , Msg
-  , update
+  , Msg, update
 
   , view, viewReadOnly
   )

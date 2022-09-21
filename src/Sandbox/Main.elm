@@ -2,7 +2,9 @@ module Sandbox.Main exposing (main)
 
 
 import App.Data.Points as Points exposing (Points)
+import App.Data.Tally as Tally exposing (Tally)
 import App.View.Score as Score
+import App.View.ScoreCard as ScoreCard
 import App.View.Title as Title
 import Browser
 import Html as H
@@ -26,6 +28,8 @@ main =
 type alias Model =
   { points : Points
   , scoreState : Score.State
+  , tally : Tally
+  , scoreCardState : ScoreCard.State
   }
 
 
@@ -33,6 +37,8 @@ init : () -> (Model, Cmd msg)
 init _ =
   ( { points = Points.zero
     , scoreState = Score.init
+    , tally = Tally.zero
+    , scoreCardState = ScoreCard.init
     }
   , Cmd.none
   )
@@ -42,20 +48,27 @@ init _ =
 
 
 type Msg
-  = ClickedAddPoints
-  | GotPoints Points
-  | ScoreMsg Score.Msg
+  -- Score
+  = ClickedAddPoints1
+  | GotPoints1 Points
+  | ChangedScore Score.Msg
+
+  -- ScoreCard
+  | ClickedReset
+  | ClickedAddPoints2
+  | GotPoints2 Points
+  | ChangedScoreCard ScoreCard.Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    ClickedAddPoints ->
+    ClickedAddPoints1 ->
       ( model
-      , Random.generate GotPoints pointsGenerator
+      , Random.generate GotPoints1 pointsGenerator
       )
 
-    GotPoints points ->
+    GotPoints1 points ->
       ( { model
         | points = Points.add points model.points
         , scoreState = Score.addDelta points model.scoreState
@@ -63,8 +76,33 @@ update msg model =
       , Cmd.none
       )
 
-    ScoreMsg scoreMsg ->
+    ChangedScore scoreMsg ->
       ( { model | scoreState = Score.update scoreMsg model.scoreState }
+      , Cmd.none
+      )
+
+    ClickedReset ->
+      ( { model | tally = Tally.resetCurrent model.tally }
+      , Cmd.none
+      )
+
+    ClickedAddPoints2 ->
+      ( model
+      , Random.generate GotPoints2 pointsGenerator
+      )
+
+    GotPoints2 points ->
+      ( { model
+        | tally = Tally.addPoints points model.tally
+        , scoreCardState = ScoreCard.addDelta points model.scoreCardState
+        }
+      , Cmd.none
+      )
+
+    ChangedScoreCard scoreCardMsg ->
+      ( { model
+        | scoreCardState = ScoreCard.update scoreCardMsg model.scoreCardState
+        }
       , Cmd.none
       )
 
@@ -84,6 +122,7 @@ view model =
     [ H.h1 [] [ H.text "Sandbox" ]
     , viewTitle
     , viewScore model.points model.scoreState
+    , viewScoreCard model.tally model.scoreCardState
     ]
 
 
@@ -100,8 +139,26 @@ viewScore points state =
   H.div []
     [ H.h2 [] [ H.text "Score" ]
     , H.div []
-        [ H.p [] [ Score.view "Score" points state |> H.map ScoreMsg ]
-        , H.button [ HE.onClick ClickedAddPoints ] [ H.text "Add points" ]
+        [ H.p [] [ Score.view "Score" points state |> H.map ChangedScore ]
+        , H.button [ HE.onClick ClickedAddPoints1 ] [ H.text "Add points" ]
         ]
     , H.p [] [ Score.viewReadOnly "Best" Points.zero ]
+    ]
+
+
+viewScoreCard : Tally -> ScoreCard.State -> H.Html Msg
+viewScoreCard tally state =
+  H.div []
+    [ H.h2 [] [ H.text "Score Card" ]
+    , ScoreCard.view
+        { current = Tally.getCurrent tally
+        , best = Tally.getBest tally
+        }
+        state
+          |> H.map ChangedScoreCard
+    , H.p []
+        [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
+        , H.text " "
+        , H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ]
+        ]
     ]

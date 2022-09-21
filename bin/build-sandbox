@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+mkdir -p "$build"
+
+# HTML
+cp "$project/html/sandbox.html" "$build/index.html"
+
+# Assets
+cp -r "$project/assets/fonts" "$build"
+
+# CSS
+sass "$project/sass/index.scss" "$build/index.css"
+
+# JavaScript
+elm make "$project/src/Sandbox/Main.elm" --debug --output="$build/sandbox.js"

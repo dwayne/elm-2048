@@ -1,0 +1,26 @@
+@use "sass:color";
+@use "colors";
+
+.button {
+  border: 0;
+  border-radius: 3px;
+
+  padding: 10px 20px;
+
+  font-size: inherit;
+  font-weight: bold;
+  white-space: nowrap;
+
+  background-color: colors.$squirrel;
+  color: colors.$floralWhite1;
+
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: color.adjust(colors.$squirrel, $lightness: 5%);
+}
+
+.button:active {
+  transform: scale(0.95);
+}

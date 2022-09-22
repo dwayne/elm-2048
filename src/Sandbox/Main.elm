@@ -3,11 +3,13 @@ module Sandbox.Main exposing (main)
 
 import App.Data.Points as Points exposing (Points)
 import App.Data.Tally as Tally exposing (Tally)
+import App.View.Header as Header
 import App.View.Score as Score
 import App.View.ScoreCard as ScoreCard
 import App.View.Title as Title
 import Browser
 import Html as H
+import Html.Attributes as HA
 import Html.Events as HE
 import Random
 
@@ -120,9 +122,10 @@ view : Model -> H.Html Msg
 view model =
   H.div []
     [ H.h1 [] [ H.text "Sandbox" ]
-    , viewTitle
-    , viewScore model.points model.scoreState
-    , viewScoreCard model.tally model.scoreCardState
+    -- , viewTitle
+    -- , viewScore model.points model.scoreState
+    -- , viewScoreCard model.tally model.scoreCardState
+    , viewHeader model.tally model.scoreCardState
     ]
 
 
@@ -156,6 +159,33 @@ viewScoreCard tally state =
         }
         state
           |> H.map ChangedScoreCard
+    , H.p []
+        [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
+        , H.text " "
+        , H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ]
+        ]
+    ]
+
+
+viewHeader : Tally -> ScoreCard.State -> H.Html Msg
+viewHeader tally state =
+  H.div []
+    [ H.h2 [] [ H.text "Header" ]
+    , H.div
+        [ HA.style "min-width" "280px"
+        , HA.style "max-width" "500px"
+        ]
+        [ Header.view
+            { title = Title.view
+            , scoreCard =
+                ScoreCard.view
+                    { current = Tally.getCurrent tally
+                    , best = Tally.getBest tally
+                    }
+                    state
+                      |> H.map ChangedScoreCard
+            }
+        ]
     , H.p []
         [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
         , H.text " "

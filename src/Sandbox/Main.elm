@@ -3,6 +3,8 @@ module Sandbox.Main exposing (main)
 
 import App.Data.Points as Points exposing (Points)
 import App.Data.Tally as Tally exposing (Tally)
+import App.View.Footer as Footer
+import App.View.Grid as Grid
 import App.View.Header as Header
 import App.View.Introduction as Introduction
 import App.View.Score as Score
@@ -136,6 +138,8 @@ view model =
     -- , viewScoreCard model.tally model.scoreCardState
     , viewHeader model.tally model.scoreCardState
     , viewIntroduction
+    , viewGrid
+    , viewFooter
     ]
 
 
@@ -214,4 +218,24 @@ viewIntroduction =
         , HA.style "max-width" "500px"
         ]
         [ Introduction.view ClickedNewGame ]
+    ]
+
+
+viewGrid : H.Html msg
+viewGrid =
+  H.div []
+    [ H.h2 [] [ H.text "Grid" ]
+    , Grid.view
+    ]
+
+
+viewFooter : H.Html Msg
+viewFooter =
+  H.div []
+    [ H.h2 [] [ H.text "Footer" ]
+    , H.div
+        [ HA.style "min-width" "280px"
+        , HA.style "max-width" "500px"
+        ]
+        [ Footer.view ]
     ]

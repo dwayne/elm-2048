@@ -9,7 +9,7 @@ cp "$project/html/sandbox.html" "$build/index.html"
 cp -r "$project/assets/fonts" "$build"
 
 # CSS
-sass "$project/sass/index.scss" "$build/index.css"
+sass --embed-sources "$project/sass/index.scss" "$build/index.css"
 
 # JavaScript
 elm make "$project/src/Sandbox/Main.elm" --debug --output="$build/sandbox.js"

@@ -190,14 +190,12 @@ viewHeader tally state =
         , HA.style "max-width" "500px"
         ]
         [ Header.view
-            { title = Title.view
+            { current = Tally.getCurrent tally
+            , best = Tally.getBest tally
             , scoreCard =
-                ScoreCard.view
-                    { current = Tally.getCurrent tally
-                    , best = Tally.getBest tally
-                    }
-                    state
-                      |> H.map ChangedScoreCard
+                { state = state
+                , onChange = ChangedScoreCard
+                }
             }
         ]
     , H.p []

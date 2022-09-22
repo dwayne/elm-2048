@@ -1,15 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Elm 2048</title>
+    <link rel="stylesheet" href="/index.css">
+    <style>
+      body {
+        margin: 80px 0;
+      }
+    </style>
   </head>
   <body>
-    <script src="2048.js"></script>
+    <div id="app"></div>
+    <script src="/app.js"></script>
     <script>
-      Elm.Game.fullscreen();
+      Elm.Main.init({
+        node: document.getElementById("app")
+      });
     </script>
   </body>
 </html>

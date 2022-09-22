@@ -4,6 +4,7 @@ module Sandbox.Main exposing (main)
 import App.Data.Points as Points exposing (Points)
 import App.Data.Tally as Tally exposing (Tally)
 import App.View.Header as Header
+import App.View.Introduction as Introduction
 import App.View.Score as Score
 import App.View.ScoreCard as ScoreCard
 import App.View.Title as Title
@@ -61,6 +62,9 @@ type Msg
   | GotPoints2 Points
   | ChangedScoreCard ScoreCard.Msg
 
+  -- Introduction
+  | ClickedNewGame
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -108,6 +112,11 @@ update msg model =
       , Cmd.none
       )
 
+    ClickedNewGame ->
+      ( { model | tally = Tally.resetCurrent model.tally }
+      , Cmd.none
+      )
+
 
 pointsGenerator : Random.Generator Points
 pointsGenerator =
@@ -126,6 +135,7 @@ view model =
     -- , viewScore model.points model.scoreState
     -- , viewScoreCard model.tally model.scoreCardState
     , viewHeader model.tally model.scoreCardState
+    , viewIntroduction
     ]
 
 
@@ -187,8 +197,21 @@ viewHeader tally state =
             }
         ]
     , H.p []
-        [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
-        , H.text " "
-        , H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ]
+        -- [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
+        -- , H.text " "
+        -- , H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ]
+        -- ]
+        [ H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ] ]
+    ]
+
+
+viewIntroduction : H.Html Msg
+viewIntroduction =
+  H.div []
+    [ H.h2 [] [ H.text "Introduction" ]
+    , H.div
+        [ HA.style "min-width" "280px"
+        , HA.style "max-width" "500px"
         ]
+        [ Introduction.view ClickedNewGame ]
     ]

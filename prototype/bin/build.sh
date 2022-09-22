@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-sass "$prototype/styles/index.scss" "$prototype/index.css"
+sass --embed-sources "$prototype/sass/index.scss" "$prototype/index.css"

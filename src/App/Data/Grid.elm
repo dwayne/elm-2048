@@ -2,12 +2,11 @@ module App.Data.Grid exposing
   ( Grid, empty
   , reset
   , generator
-
-  , Tile(..)
   , toTiles
   )
 
 
+import App.Data.Tile as Tile exposing (Tile)
 import App.Data.Tile.Position as Position exposing (Position)
 import App.Data.Tile.Value as Value exposing (Value)
 import App.Lib.List as List
@@ -18,14 +17,6 @@ type Grid
   = Grid
       { currentId : Int
       , tiles : List Tile
-      }
-
-
-type Tile
-  = New
-      { id : Int
-      , value : Value
-      , position : Position
       }
 
 
@@ -96,19 +87,12 @@ addTiles valueAndPositions currentId tiles =
       addTiles
         restValueAndPositions
         (currentId + 1)
-        (tiles ++ [ New { id = currentId, value = value, position = position } ])
+        (tiles ++ [ Tile.new currentId value position ])
 
 
 getUnavailablePositions : List Tile -> List Position
 getUnavailablePositions =
-  List.map getPosition
-
-
-getPosition : Tile -> Position
-getPosition tile =
-  case tile of
-    New { position } ->
-      position
+  List.map Tile.getPosition
 
 
 toTiles : Grid -> List Tile

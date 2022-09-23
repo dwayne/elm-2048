@@ -2,6 +2,7 @@ module App.View.Grid exposing (view)
 
 
 import App.Data.Grid as Grid exposing (Grid)
+import App.Data.Tile as Tile exposing (Tile)
 import App.Data.Tile.Value as Value exposing (Value)
 import Html as H
 import Html.Attributes as HA
@@ -35,32 +36,26 @@ view grid =
     ]
 
 
-viewGridTiles : List Grid.Tile -> H.Html msg
+viewGridTiles : List Tile -> H.Html msg
 viewGridTiles =
   HK.node "div" [ HA.class "grid_tiles" ] << List.map viewGridTile
 
 
-viewGridTile : Grid.Tile -> (String, H.Html msg)
+viewGridTile : Tile -> (String, H.Html msg)
 viewGridTile tile =
   let
-    info =
-      case tile of
-        Grid.New { id, value, position } ->
-          { status = "new"
-          , id = id
-          , value = value
-          , position = position
-          }
+    { status, id, value, position } =
+      Tile.toInfo tile
 
     (r, c) =
-      info.position
+      position
   in
-  ( String.fromInt info.id
+  ( String.fromInt id
   , H.div
       [ HA.class "grid__tile"
       , HA.class <| "grid__tile--" ++ String.fromInt r ++ "-" ++ String.fromInt c
       ]
-      [ viewTile info.status info.value ]
+      [ viewTile status value ]
   )
 
 

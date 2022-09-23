@@ -1,8 +1,11 @@
 module App.Data.Points exposing
-  ( Points, zero, fromInt
+  ( Points, zero, fromValue
   , add, max
   , toString
   )
+
+
+import App.Data.Tile.Value as Value exposing (Value)
 
 
 type Points
@@ -14,12 +17,9 @@ zero =
   Points 0
 
 
-fromInt : Int -> Points
-fromInt n =
-  if n > 0 then
-    Points n
-  else
-    Points 0
+fromValue : Value -> Points
+fromValue =
+  Points << Value.toInt
 
 
 add : Points -> Points -> Points

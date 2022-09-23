@@ -8,8 +8,8 @@ import Html.Attributes as HA
 import Html.Keyed as HK
 
 
-view : Int -> Grid -> H.Html msg
-view currentId grid =
+view : Grid -> H.Html msg
+view grid =
   H.div [ HA.class "grid" ]
     [ H.div [ HA.class "grid__background" ]
         [ H.div [ HA.class "grid__cells" ]
@@ -30,33 +30,42 @@ view currentId grid =
             , H.div [ HA.class "grid__cell" ] []
             , H.div [ HA.class "grid__cell" ] []
             ]
-        , viewGridTiles currentId <| Grid.toTransparentTiles grid
+        , viewGridTiles <| Grid.toTiles grid
         ]
     ]
 
 
-viewGridTiles : Int -> List Grid.TransparentTile -> H.Html msg
-viewGridTiles currentId =
-  HK.node "div" [ HA.class "grid_tiles" ] << List.indexedMap (viewGridTile currentId)
+viewGridTiles : List Grid.Tile -> H.Html msg
+viewGridTiles =
+  HK.node "div" [ HA.class "grid_tiles" ] << List.map viewGridTile
 
 
-viewGridTile : Int -> Int -> Grid.TransparentTile -> (String, H.Html msg)
-viewGridTile currentId index { kind, value, position } =
+viewGridTile : Grid.Tile -> (String, H.Html msg)
+viewGridTile tile =
   let
+    info =
+      case tile of
+        Grid.New { id, value, position } ->
+          { status = "new"
+          , id = id
+          , value = value
+          , position = position
+          }
+
     (r, c) =
-      position
+      info.position
   in
-  ( String.fromInt <| currentId + index
+  ( String.fromInt info.id
   , H.div
       [ HA.class "grid__tile"
       , HA.class <| "grid__tile--" ++ String.fromInt r ++ "-" ++ String.fromInt c
       ]
-      [ viewTile kind value ]
+      [ viewTile info.status info.value ]
   )
 
 
 viewTile : String -> Value -> H.Html msg
-viewTile kind value =
+viewTile status value =
   let
     valueAsString =
       Value.toString value
@@ -77,7 +86,7 @@ viewTile kind value =
   in
   H.div
     [ HA.class "tile"
-    , HA.class <| "tile--" ++ kind
+    , HA.class <| "tile--" ++ status
     , HA.class valueClassName
     ]
     [ H.div [ HA.class "tile__value" ] [ H.text valueAsString ] ]

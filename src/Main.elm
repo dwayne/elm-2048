@@ -26,19 +26,21 @@ main =
 type alias Model =
   { tally : Tally
   , scoreCardState : ScoreCard.State
-  , currentId : Int
   , grid : Grid
   }
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
+  let
+    grid =
+      Grid.empty
+  in
   ( { tally = Tally.zero
     , scoreCardState = ScoreCard.init
-    , currentId = 0
-    , grid = Grid.empty
+    , grid = grid
     }
-  , generateTiles Grid.empty
+  , generateTiles grid
   )
 
 
@@ -48,7 +50,7 @@ init _ =
 type Msg
   = ChangedScoreCard ScoreCard.Msg
   | ClickedNewGame
-  | GeneratedTiles (Maybe Grid)
+  | GeneratedTiles (Bool, Grid)
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -62,22 +64,25 @@ update msg model =
       )
 
     ClickedNewGame ->
-      ( { model | currentId = model.currentId + 2, grid = Grid.empty }
-      , generateTiles Grid.empty
+      let
+        grid =
+          Grid.reset model.grid
+      in
+      ( { model | grid = grid }
+      , generateTiles grid
       )
 
-    GeneratedTiles maybeGrid ->
-      case maybeGrid of
-        Nothing ->
-          -- TODO: Game over.
-          ( model
-          , Cmd.none
-          )
+    GeneratedTiles (wasSuccessful, grid) ->
+      if wasSuccessful then
+        ( { model | grid = grid }
+        , Cmd.none
+        )
 
-        Just grid ->
-          ( { model | grid = grid }
-          , Cmd.none
-          )
+      else
+        -- TODO: Game over.
+        ( model
+        , Cmd.none
+        )
 
 
 generateTiles : Grid -> Cmd Msg
@@ -89,7 +94,7 @@ generateTiles =
 
 
 view : Model -> H.Html Msg
-view { tally, scoreCardState, currentId, grid } =
+view { tally, scoreCardState, grid } =
   App.View.Main.view
     { header =
         { current = Tally.getCurrent tally
@@ -100,6 +105,5 @@ view { tally, scoreCardState, currentId, grid } =
             }
         }
     , onNewGame = ClickedNewGame
-    , currentId = currentId
     , grid = grid
     }

@@ -13,16 +13,15 @@ import Html.Attributes as HA
 type alias Options msg =
   { header : Header.Options msg
   , onNewGame : msg
-  , currentId : Int
   , grid : Grid
   }
 
 
 view : Options msg -> H.Html msg
-view { header, onNewGame, currentId, grid } =
+view { header, onNewGame, grid } =
   H.main_ [ HA.class "main" ]
     [ H.div [ HA.class "main__header" ] [ Header.view header ]
     , H.div [ HA.class "main__introduction" ] [ Introduction.view onNewGame ]
-    , H.div [ HA.class "main__grid" ] [ Grid.view currentId grid ]
+    , H.div [ HA.class "main__grid" ] [ Grid.view grid ]
     , H.div [ HA.class "main__footer" ] [ Footer.view ]
     ]

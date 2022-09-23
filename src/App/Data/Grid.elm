@@ -1,9 +1,10 @@
 module App.Data.Grid exposing
   ( Grid, empty
+  , reset
   , generator
 
-  , TransparentTile
-  , toTransparentTiles
+  , Tile(..)
+  , toTiles
   )
 
 
@@ -14,41 +15,62 @@ import Random
 
 
 type Grid
-  = Grid (List Tile)
+  = Grid
+      { currentId : Int
+      , tiles : List Tile
+      }
+
 
 type Tile
-  = New Value Position
-  | Composite Value Position
-  | Merged Value Translation
-  | Old Value Translation
-
-type alias Translation =
-  { from : Position
-  , to : Position
-  }
+  = New
+      { id : Int
+      , value : Value
+      , position : Position
+      }
 
 
 empty : Grid
 empty =
-  Grid []
+  Grid
+    { currentId = 0
+    , tiles = []
+    }
 
 
-generator : Grid -> Random.Generator (Maybe Grid)
-generator grid =
-  getUnavailablePositions grid
-    |> tileGenerator
+reset : Grid -> Grid
+reset (Grid { currentId }) =
+  Grid
+    { currentId = currentId
+    , tiles = []
+    }
+
+
+generator : Grid -> Random.Generator (Bool, Grid)
+generator (Grid { currentId, tiles } as grid) =
+  getUnavailablePositions tiles
+    |> valueAndPositionGenerator
     |> Random.andThen
-        (\newTiles ->
-          if List.isEmpty newTiles then
-            Random.constant Nothing
+        (\valueAndPositions ->
+          if List.isEmpty valueAndPositions then
+            Random.constant (False, grid)
 
           else
-            Random.constant <| Just <| addTiles newTiles grid
+            let
+              (newCurrentId, newTiles) =
+                addTiles valueAndPositions currentId tiles
+            in
+            Random.constant
+              ( True
+              , Grid
+                  { currentId = newCurrentId
+                  , tiles = newTiles
+                  }
+              )
         )
 
 
-tileGenerator : List Position -> Random.Generator (List Tile)
-tileGenerator unavailablePositions =
+valueAndPositionGenerator : List Position -> Random.Generator (List (Value, Position))
+valueAndPositionGenerator unavailablePositions =
   Position.generator unavailablePositions
     |> Random.andThen
         (\positions ->
@@ -59,74 +81,36 @@ tileGenerator unavailablePositions =
             Random.list (List.length positions) Value.generator
               |> Random.andThen
                   (\values ->
-                    List.zip values positions
-                      |> List.map (\(value, position) -> New value position)
-                      |> Random.constant
+                    Random.constant <| List.zip values positions
                   )
         )
 
 
-getUnavailablePositions : Grid -> List Position
-getUnavailablePositions (Grid tiles) =
-  List.map getPosition tiles
+addTiles : List (Value, Position) -> Int -> List Tile -> (Int, List Tile)
+addTiles valueAndPositions currentId tiles =
+  case valueAndPositions of
+    [] ->
+      (currentId, tiles)
+
+    (value, position) :: restValueAndPositions ->
+      addTiles
+        restValueAndPositions
+        (currentId + 1)
+        (tiles ++ [ New { id = currentId, value = value, position = position } ])
+
+
+getUnavailablePositions : List Tile -> List Position
+getUnavailablePositions =
+  List.map getPosition
 
 
 getPosition : Tile -> Position
 getPosition tile =
   case tile of
-    New _ position ->
+    New { position } ->
       position
 
-    Composite _ position ->
-      position
 
-    Merged _ { to } ->
-      to
-
-    Old _ { to } ->
-      to
-
-
-addTiles : List Tile -> Grid -> Grid
-addTiles newTiles (Grid tiles) =
-  Grid <| tiles ++ newTiles
-
-
-type alias TransparentTile =
-  { kind : String
-  , value : Value
-  , position : Position
-  }
-
-
-toTransparentTiles : Grid -> List TransparentTile
-toTransparentTiles (Grid tiles) =
-  List.map toTransparentTile tiles
-
-
-toTransparentTile : Tile -> TransparentTile
-toTransparentTile tile =
-  case tile of
-    New value position ->
-      { kind = "new"
-      , value = value
-      , position = position
-      }
-
-    Composite value position ->
-      { kind = "composite"
-      , value = value
-      , position = position
-      }
-
-    Merged value { to } ->
-      { kind = "merged"
-      , value = value
-      , position = to
-      }
-
-    Old value { to } ->
-      { kind = "old"
-      , value = value
-      , position = to
-      }
+toTiles : Grid -> List Tile
+toTiles (Grid { tiles }) =
+  tiles

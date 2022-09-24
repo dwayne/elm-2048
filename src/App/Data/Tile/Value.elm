@@ -1,5 +1,6 @@
 module App.Data.Tile.Value exposing
   ( Value, two, four
+  , isEqual
   , generator
   , double
   , toInt, toString
@@ -21,6 +22,11 @@ two =
 four : Value
 four =
   Value 4
+
+
+isEqual : Value -> Value -> Bool
+isEqual (Value a) (Value b) =
+  a == b
 
 
 generator : Random.Generator Value

@@ -51,6 +51,7 @@ type Msg
   = ChangedScoreCard ScoreCard.Msg
   | ClickedNewGame
   | GeneratedTiles (Bool, Grid)
+  | ClickedMoveRight
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -84,6 +85,15 @@ update msg model =
         , Cmd.none
         )
 
+    ClickedMoveRight ->
+      let
+        grid =
+          Grid.moveRight model.grid
+      in
+      ( { model | grid = grid }
+      , generateTiles grid
+      )
+
 
 generateTiles : Grid -> Cmd Msg
 generateTiles =
@@ -106,4 +116,5 @@ view { tally, scoreCardState, grid } =
         }
     , onNewGame = ClickedNewGame
     , grid = grid
+    , onMoveRight = ClickedMoveRight
     }

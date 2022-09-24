@@ -8,20 +8,29 @@ import App.View.Header as Header
 import App.View.Introduction as Introduction
 import Html as H
 import Html.Attributes as HA
+import Html.Events as HE
 
 
 type alias Options msg =
   { header : Header.Options msg
   , onNewGame : msg
   , grid : Grid
+  , onMoveRight : msg
   }
 
 
 view : Options msg -> H.Html msg
-view { header, onNewGame, grid } =
+view { header, onNewGame, grid, onMoveRight } =
   H.main_ [ HA.class "main" ]
     [ H.div [ HA.class "main__header" ] [ Header.view header ]
     , H.div [ HA.class "main__introduction" ] [ Introduction.view onNewGame ]
     , H.div [ HA.class "main__grid" ] [ Grid.view grid ]
+    , H.p []
+        [ H.button
+            [ HA.style "margin-right" "10px"
+            , HE.onClick onMoveRight
+            ]
+            [ H.text "Move Right" ]
+        ]
     , H.div [ HA.class "main__footer" ] [ Footer.view ]
     ]

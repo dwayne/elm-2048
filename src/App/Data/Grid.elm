@@ -3,6 +3,10 @@ module App.Data.Grid exposing
   , reset
   , generator
   , toTiles
+
+  , moveRight
+
+  , unsafeFromTiles
   )
 
 
@@ -97,4 +101,162 @@ getUnavailablePositions =
 
 toTiles : Grid -> List Tile
 toTiles (Grid { tiles }) =
-  tiles
+  List.sortWith Tile.comparator tiles
+
+
+-- MOVE
+
+
+type alias MovementState =
+  { currentId : Int
+  , lastPosition : Position
+  , tileInCell : Maybe Tile.State
+  , newTiles : List Tile
+  }
+
+
+moveRight : Grid -> Grid
+moveRight (Grid { currentId, tiles }) =
+  let
+    state =
+      tiles
+        |> age
+        |> sortRight
+        |> moveRightHelper
+            { currentId = currentId
+            , lastPosition = Position 1 4
+            , tileInCell = Nothing
+            , newTiles = []
+            }
+  in
+  Grid
+    { currentId = state.currentId
+    , tiles = state.newTiles
+    }
+
+
+sortRight : List Tile.State -> List Tile.State
+sortRight =
+  List.sortWith compareRight
+
+
+compareRight : Tile.State -> Tile.State -> Order
+compareRight tile1 tile2 =
+  let
+    p1 =
+      tile1.position
+
+    p2 =
+      tile2.position
+  in
+  if p1.row < p2.row then
+    LT
+  else if p1.row > p2.row then
+    GT
+  else
+    compare p2.col p1.col
+
+
+moveRightHelper : MovementState -> List Tile.State -> MovementState
+moveRightHelper state tiles =
+  case tiles of
+    [] ->
+      case state.tileInCell of
+        Nothing ->
+          state
+
+        Just { id, value, position } ->
+          { state
+          | lastPosition = position
+          , tileInCell = Nothing
+          , newTiles =
+              state.newTiles ++ [ Tile.old id value position ]
+          }
+
+    tile :: restTiles ->
+      let
+        state1 =
+          if tile.position.row > state.lastPosition.row then
+            { state
+            | lastPosition = Position tile.position.row 4
+            , tileInCell = Nothing
+            , newTiles =
+                (++) state.newTiles <|
+                  case state.tileInCell of
+                    Nothing ->
+                      []
+
+                    Just prevTile ->
+                      [ Tile.old prevTile.id prevTile.value prevTile.position
+                      ]
+            }
+          else
+            state
+
+        state2 =
+          case state1.tileInCell of
+            Nothing ->
+              { state1
+              | tileInCell = Just <| Tile.State tile.id tile.value state1.lastPosition
+              }
+
+            Just prevTile ->
+              let
+                lastPosition =
+                  Position
+                    state1.lastPosition.row
+                    (state1.lastPosition.col - 1)
+              in
+              if Value.isEqual tile.value prevTile.value then
+                { state1
+                | newTiles =
+                    (++) state1.newTiles <|
+                      [ Tile.merged tile.id tile.value prevTile.position
+                      , Tile.merged prevTile.id prevTile.value prevTile.position
+                      , Tile.composite
+                          state1.currentId
+                          (Value.double prevTile.value)
+                          prevTile.position
+                      ]
+                , currentId = state1.currentId + 1
+                , tileInCell = Nothing
+                , lastPosition = lastPosition
+                }
+              else
+                { state1
+                | newTiles =
+                    (++) state1.newTiles <|
+                      [ Tile.old prevTile.id prevTile.value prevTile.position
+                      ]
+                , tileInCell = Just <| Tile.State tile.id tile.value lastPosition
+                , lastPosition = lastPosition
+                }
+      in
+      moveRightHelper state2 restTiles
+
+
+age : List Tile -> List Tile.State
+age =
+  List.filterMap Tile.age
+
+
+unsafeFromTiles : List { value : Value, position : Position } -> Grid
+unsafeFromTiles input =
+  unsafeFromTilesHelper 0 input []
+
+
+unsafeFromTilesHelper
+  : Int
+  -> List { value : Value, position : Position }
+  -> List Tile
+  -> Grid
+unsafeFromTilesHelper currentId input tiles =
+  case input of
+    [] ->
+      Grid { currentId = currentId, tiles = tiles }
+
+    { value, position } :: restInput ->
+      unsafeFromTilesHelper
+        (currentId + 1)
+        restInput
+        (tiles ++ [ Tile.new currentId value position ])

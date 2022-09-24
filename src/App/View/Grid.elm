@@ -44,23 +44,23 @@ viewGridTiles =
 viewGridTile : Tile -> (String, H.Html msg)
 viewGridTile tile =
   let
-    { status, id, value, position } =
+    { kind, state } =
       Tile.toInfo tile
 
     (r, c) =
-      position
+      ( state.position.row, state.position.col )
   in
-  ( String.fromInt id
+  ( String.fromInt state.id
   , H.div
       [ HA.class "grid__tile"
       , HA.class <| "grid__tile--" ++ String.fromInt r ++ "-" ++ String.fromInt c
       ]
-      [ viewTile status value ]
+      [ viewTile kind state.value ]
   )
 
 
 viewTile : String -> Value -> H.Html msg
-viewTile status value =
+viewTile kind value =
   let
     valueAsString =
       Value.toString value
@@ -81,7 +81,7 @@ viewTile status value =
   in
   H.div
     [ HA.class "tile"
-    , HA.class <| "tile--" ++ status
+    , HA.class <| "tile--" ++ kind
     , HA.class valueClassName
     ]
     [ H.div [ HA.class "tile__value" ] [ H.text valueAsString ] ]

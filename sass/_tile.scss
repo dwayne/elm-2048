@@ -134,7 +134,7 @@
 }
 
 .tile--merged {
-  animation: disappear var(--tile-disappear-duration) var(--tile-disappear-delay) ease;
+  animation: disappear var(--tile-disappear-duration) var(--tile-disappear-delay) linear;
   animation-fill-mode: both;
 }
 

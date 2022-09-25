@@ -101,7 +101,7 @@ getUnavailablePositions =
 
 toTiles : Grid -> List Tile
 toTiles (Grid { tiles }) =
-  List.sortWith Tile.comparator tiles
+  tiles
 
 
 -- MOVE
@@ -110,7 +110,7 @@ toTiles (Grid { tiles }) =
 type alias MovementState =
   { currentId : Int
   , lastPosition : Position
-  , tileInCell : Maybe Tile.State
+  , tileInCell : Maybe Tile
   , newTiles : List Tile
   }
 
@@ -165,12 +165,12 @@ moveRightHelper state tiles =
         Nothing ->
           state
 
-        Just { id, value, position } ->
+        Just prevTile ->
           { state
-          | lastPosition = position
+          | lastPosition = Tile.getPosition prevTile
           , tileInCell = Nothing
           , newTiles =
-              state.newTiles ++ [ Tile.old id value position ]
+              state.newTiles ++ [ prevTile ]
           }
 
     tile :: restTiles ->
@@ -187,8 +187,7 @@ moveRightHelper state tiles =
                       []
 
                     Just prevTile ->
-                      [ Tile.old prevTile.id prevTile.value prevTile.position
-                      ]
+                      [ prevTile ]
             }
           else
             state
@@ -197,7 +196,7 @@ moveRightHelper state tiles =
           case state1.tileInCell of
             Nothing ->
               { state1
-              | tileInCell = Just <| Tile.State tile.id tile.value state1.lastPosition
+              | tileInCell = Just <| Tile.old tile.id tile.value tile.position state1.lastPosition
               }
 
             Just prevTile ->
@@ -207,16 +206,16 @@ moveRightHelper state tiles =
                     state1.lastPosition.row
                     (state1.lastPosition.col - 1)
               in
-              if Value.isEqual tile.value prevTile.value then
+              if Value.isEqual tile.value (Tile.getValue prevTile) then
                 { state1
                 | newTiles =
                     (++) state1.newTiles <|
-                      [ Tile.merged tile.id tile.value prevTile.position
-                      , Tile.merged prevTile.id prevTile.value prevTile.position
+                      [ Tile.merged tile.id tile.value tile.position (Tile.getPosition prevTile)
+                      , Tile.toMerged prevTile
                       , Tile.composite
                           state1.currentId
-                          (Value.double prevTile.value)
-                          prevTile.position
+                          (Value.double <| Tile.getValue prevTile)
+                          (Tile.getPosition prevTile)
                       ]
                 , currentId = state1.currentId + 1
                 , tileInCell = Nothing
@@ -225,10 +224,8 @@ moveRightHelper state tiles =
               else
                 { state1
                 | newTiles =
-                    (++) state1.newTiles <|
-                      [ Tile.old prevTile.id prevTile.value prevTile.position
-                      ]
-                , tileInCell = Just <| Tile.State tile.id tile.value lastPosition
+                    state1.newTiles ++ [ prevTile ]
+                , tileInCell = Just <| Tile.old tile.id tile.value tile.position lastPosition
                 , lastPosition = lastPosition
                 }
       in

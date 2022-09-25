@@ -3,6 +3,7 @@ module Main exposing (main)
 
 import App.Data.Grid as Grid exposing (Grid)
 import App.Data.Tally as Tally exposing (Tally)
+import App.View.Grid as Grid
 import App.View.Main
 import App.View.ScoreCard as ScoreCard
 import Browser
@@ -16,7 +17,7 @@ main =
     { init = init
     , view = view
     , update = update
-    , subscriptions = always Sub.none
+    , subscriptions = subscriptions
     }
 
 
@@ -27,6 +28,7 @@ type alias Model =
   { tally : Tally
   , scoreCardState : ScoreCard.State
   , grid : Grid
+  , gridViewState : Grid.ViewState
   }
 
 
@@ -39,6 +41,7 @@ init _ =
   ( { tally = Tally.zero
     , scoreCardState = ScoreCard.init
     , grid = grid
+    , gridViewState = Grid.init <| Grid.toTiles grid
     }
   , generateTiles grid
   )
@@ -52,6 +55,7 @@ type Msg
   | ClickedNewGame
   | GeneratedTiles (Bool, Grid)
   | ClickedMoveRight
+  | ChangedGrid Grid.Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -69,13 +73,13 @@ update msg model =
         grid =
           Grid.reset model.grid
       in
-      ( { model | grid = grid }
+      ( { model | grid = grid, gridViewState = Grid.init <| Grid.toTiles grid }
       , generateTiles grid
       )
 
     GeneratedTiles (wasSuccessful, grid) ->
       if wasSuccessful then
-        ( { model | grid = grid }
+        ( { model | grid = grid, gridViewState = Grid.init <| Grid.toTiles grid }
         , Cmd.none
         )
 
@@ -90,8 +94,13 @@ update msg model =
         grid =
           Grid.moveRight model.grid
       in
-      ( { model | grid = grid }
+      ( { model | grid = grid, gridViewState = Grid.init <| Grid.toTiles grid }
       , generateTiles grid
+      )
+
+    ChangedGrid gridMsg ->
+      ( { model | gridViewState = Grid.update gridMsg model.gridViewState }
+      , Cmd.none
       )
 
 
@@ -100,11 +109,16 @@ generateTiles =
   Random.generate GeneratedTiles << Grid.generator
 
 
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.map ChangedGrid Grid.subscriptions
+
+
 -- VIEW
 
 
 view : Model -> H.Html Msg
-view { tally, scoreCardState, grid } =
+view { tally, scoreCardState, gridViewState } =
   App.View.Main.view
     { header =
         { current = Tally.getCurrent tally
@@ -115,6 +129,6 @@ view { tally, scoreCardState, grid } =
             }
         }
     , onNewGame = ClickedNewGame
-    , grid = grid
+    , gridViewState = gridViewState
     , onMoveRight = ClickedMoveRight
     }

@@ -1,8 +1,9 @@
 module App.Data.Tile exposing
-  ( Tile, State, new, composite, merged, old
-  , getPosition
-  , comparator
+  ( Tile, State, Action(..)
+  , new, composite, merged, old
+  , getId, getValue, getPosition
   , age
+  , toMerged
 
   , Info
   , toInfo
@@ -16,8 +17,8 @@ import App.Data.Tile.Value as Value exposing (Value)
 type Tile
   = New State
   | Composite State
-  | Merged State
-  | Old State
+  | Merged State Action
+  | Old State Action
 
 
 type alias State =
@@ -25,6 +26,11 @@ type alias State =
   , value : Value
   , position : Position
   }
+
+
+type Action
+  = Stay
+  | MoveFrom Position
 
 
 new : Int -> Value -> Position -> Tile
@@ -37,14 +43,22 @@ composite id value position =
   Composite <| State id value position
 
 
-merged : Int -> Value -> Position -> Tile
-merged id value position =
-  Merged <| State id value position
+merged : Int -> Value -> Position -> Position -> Tile
+merged id value from to =
+  Merged (State id value to) <|
+    if from == to then
+      Stay
+    else
+      MoveFrom from
 
 
-old : Int -> Value -> Position -> Tile
-old id value position =
-  Old <| State id value position
+old : Int -> Value -> Position -> Position -> Tile
+old id value from to =
+  Old (State id value to) <|
+    if from == to then
+      Stay
+    else
+      MoveFrom from
 
 
 getId : Tile -> Int
@@ -56,11 +70,27 @@ getId tile =
     Composite { id } ->
       id
 
-    Merged { id } ->
+    Merged { id } _ ->
       id
 
-    Old { id } ->
+    Old { id } _ ->
       id
+
+
+getValue : Tile -> Value
+getValue tile =
+  case tile of
+    New { value } ->
+      value
+
+    Composite { value } ->
+      value
+
+    Merged { value } _ ->
+      value
+
+    Old { value } _ ->
+      value
 
 
 getPosition : Tile -> Position
@@ -72,51 +102,11 @@ getPosition tile =
     Composite { position } ->
       position
 
-    Merged { position } ->
+    Merged { position } _ ->
       position
 
-    Old { position } ->
+    Old { position } _ ->
       position
-
-
-comparator : Tile -> Tile -> Order
-comparator tile1 tile2 =
-  case (tile1, tile2) of
-    (Old state1, Old state2) ->
-      Position.comparator state1.position state2.position
-
-    (Old state1, Merged state2) ->
-      Position.comparator state1.position state2.position
-
-    (Merged state1, Old state2) ->
-      Position.comparator state1.position state2.position
-
-    (Merged state1, Merged state2) ->
-      Position.comparator state1.position state2.position
-
-    (Old _, _) ->
-      LT
-
-    (Merged _, _) ->
-      LT
-
-    (_, Old _) ->
-      GT
-
-    (_, Merged _) ->
-      GT
-
-    (Composite state1, Composite state2) ->
-      Position.comparator state1.position state2.position
-
-    (Composite _, _) ->
-      LT
-
-    (_, Composite _) ->
-      GT
-
-    (New state1, New state2) ->
-      Position.comparator state1.position state2.position
 
 
 age : Tile -> Maybe State
@@ -128,16 +118,27 @@ age tile =
     Composite state ->
       Just state
 
-    Merged _ ->
+    Merged _ _ ->
       Nothing
 
-    Old state ->
+    Old state _ ->
       Just state
+
+
+toMerged : Tile -> Tile
+toMerged tile =
+  case tile of
+    Old state action ->
+      Merged state action
+
+    _ ->
+      tile
 
 
 type alias Info =
   { kind : String
   , state : State
+  , action : Action
   }
 
 
@@ -147,19 +148,23 @@ toInfo tile =
     New state ->
       { kind = "new"
       , state = state
+      , action = Stay
       }
 
     Composite state ->
       { kind = "composite"
       , state = state
+      , action = Stay
       }
 
-    Merged state ->
+    Merged state action ->
       { kind = "merged"
       , state = state
+      , action = action
       }
 
-    Old state ->
+    Old state action ->
       { kind = "old"
       , state = state
+      , action = action
       }

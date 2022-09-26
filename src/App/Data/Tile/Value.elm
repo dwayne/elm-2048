@@ -1,7 +1,7 @@
 module App.Data.Tile.Value exposing
   ( Value, two, four
+  , twoOrFour
   , isEqual
-  , generator
   , double
   , toInt, toString
   )
@@ -24,26 +24,26 @@ four =
   Value 4
 
 
-isEqual : Value -> Value -> Bool
-isEqual (Value a) (Value b) =
-  a == b
-
-
-generator : Random.Generator Value
-generator =
+twoOrFour : Random.Generator Value
+twoOrFour =
   Random.weighted (9, two) [(1, four)]
 
 
+isEqual : Value -> Value -> Bool
+isEqual (Value v1) (Value v2) =
+  v1 == v2
+
+
 double : Value -> Value
-double (Value n) =
-  Value <| 2 * n
+double (Value v) =
+  Value <| 2 * v
 
 
 toInt : Value -> Int
-toInt (Value n) =
-  n
+toInt (Value v) =
+  v
 
 
 toString : Value -> String
-toString (Value n) =
-  String.fromInt n
+toString (Value v) =
+  String.fromInt v

@@ -1,9 +1,7 @@
 module App.Data.Tile exposing
-  ( Tile, State, Action(..)
-  , new, composite, merged, old
-  , getId, getValue, getPosition
+  ( Tile, new, composite, merged, old
+  , getPosition
   , age
-  , toMerged
 
   , Info
   , toInfo
@@ -61,38 +59,6 @@ old id value from to =
       MoveFrom from
 
 
-getId : Tile -> Int
-getId tile =
-  case tile of
-    New { id } ->
-      id
-
-    Composite { id } ->
-      id
-
-    Merged { id } _ ->
-      id
-
-    Old { id } _ ->
-      id
-
-
-getValue : Tile -> Value
-getValue tile =
-  case tile of
-    New { value } ->
-      value
-
-    Composite { value } ->
-      value
-
-    Merged { value } _ ->
-      value
-
-    Old { value } _ ->
-      value
-
-
 getPosition : Tile -> Position
 getPosition tile =
   case tile of
@@ -109,62 +75,68 @@ getPosition tile =
       position
 
 
-age : Tile -> Maybe State
+age : Tile -> Maybe Tile
 age tile =
   case tile of
-    New state ->
-      Just state
-
-    Composite state ->
-      Just state
-
     Merged _ _ ->
       Nothing
 
-    Old state _ ->
-      Just state
-
-
-toMerged : Tile -> Tile
-toMerged tile =
-  case tile of
-    Old state action ->
-      Merged state action
-
     _ ->
-      tile
+      Just tile
 
 
 type alias Info =
   { kind : String
-  , state : State
-  , action : Action
+  , id : Int
+  , value : Value
+  , from : Position
+  , to : Position
   }
 
 
 toInfo : Tile -> Info
 toInfo tile =
   case tile of
-    New state ->
+    New { id, value, position } ->
       { kind = "new"
-      , state = state
-      , action = Stay
+      , id = id
+      , value = value
+      , from = position
+      , to = position
       }
 
-    Composite state ->
+    Composite { id, value, position } ->
       { kind = "composite"
-      , state = state
-      , action = Stay
+      , id = id
+      , value = value
+      , from = position
+      , to = position
       }
 
-    Merged state action ->
+    Merged { id, value, position } action ->
       { kind = "merged"
-      , state = state
-      , action = action
+      , id = id
+      , value = value
+      , from =
+          case action of
+            Stay ->
+              position
+
+            MoveFrom from ->
+              from
+      , to = position
       }
 
-    Old state action ->
+    Old { id, value, position } action ->
       { kind = "old"
-      , state = state
-      , action = action
+      , id = id
+      , value = value
+      , from =
+          case action of
+            Stay ->
+              position
+
+            MoveFrom from ->
+              from
+      , to = position
       }

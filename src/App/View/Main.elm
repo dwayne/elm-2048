@@ -13,17 +13,17 @@ import Html.Events as HE
 type alias Options msg =
   { header : Header.Options msg
   , onNewGame : msg
-  , gridViewState : Grid.ViewState
+  , gridState : Grid.State
   , onMoveRight : msg
   }
 
 
 view : Options msg -> H.Html msg
-view { header, onNewGame, gridViewState, onMoveRight } =
+view { header, onNewGame, gridState, onMoveRight } =
   H.main_ [ HA.class "main" ]
     [ H.div [ HA.class "main__header" ] [ Header.view header ]
     , H.div [ HA.class "main__introduction" ] [ Introduction.view onNewGame ]
-    , H.div [ HA.class "main__grid" ] [ Grid.view gridViewState ]
+    , H.div [ HA.class "main__grid" ] [ Grid.view gridState ]
     , H.p []
         [ H.button
             [ HA.style "margin-right" "10px"

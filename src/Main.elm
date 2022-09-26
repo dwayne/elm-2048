@@ -28,7 +28,7 @@ type alias Model =
   { tally : Tally
   , scoreCardState : ScoreCard.State
   , grid : Grid
-  , gridViewState : Grid.ViewState
+  , gridState : Grid.State
   }
 
 
@@ -41,9 +41,9 @@ init _ =
   ( { tally = Tally.zero
     , scoreCardState = ScoreCard.init
     , grid = grid
-    , gridViewState = Grid.init <| Grid.toTiles grid
+    , gridState = Grid.init grid
     }
-  , generateTiles grid
+  , generateAtMost2Tiles grid
   )
 
 
@@ -53,7 +53,7 @@ init _ =
 type Msg
   = ChangedScoreCard ScoreCard.Msg
   | ClickedNewGame
-  | GeneratedTiles (Bool, Grid)
+  | GeneratedTiles (Maybe Grid)
   | ClickedMoveRight
   | ChangedGrid Grid.Msg
 
@@ -73,40 +73,43 @@ update msg model =
         grid =
           Grid.reset model.grid
       in
-      ( { model | grid = grid, gridViewState = Grid.init <| Grid.toTiles grid }
-      , generateTiles grid
+      ( { model | grid = grid, gridState = Grid.init grid }
+      , generateAtMost2Tiles grid
       )
 
-    GeneratedTiles (wasSuccessful, grid) ->
-      if wasSuccessful then
-        ( { model | grid = grid, gridViewState = Grid.init <| Grid.toTiles grid }
-        , Cmd.none
-        )
+    GeneratedTiles maybeGrid ->
+      case maybeGrid of
+        Just grid ->
+          ( { model | grid = grid, gridState = Grid.init grid }
+          , Cmd.none
+          )
 
-      else
-        -- TODO: Game over.
-        ( model
-        , Cmd.none
-        )
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
 
     ClickedMoveRight ->
-      let
-        grid =
-          Grid.moveRight model.grid
-      in
-      ( { model | grid = grid, gridViewState = Grid.init <| Grid.toTiles grid }
-      , generateTiles grid
-      )
+      case Grid.moveRight model.grid of
+        Just grid ->
+          ( { model | grid = grid, gridState = Grid.init grid }
+          , generateAtMost2Tiles grid
+          )
+
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
 
     ChangedGrid gridMsg ->
-      ( { model | gridViewState = Grid.update gridMsg model.gridViewState }
+      ( { model | gridState = Grid.update gridMsg model.gridState }
       , Cmd.none
       )
 
 
-generateTiles : Grid -> Cmd Msg
-generateTiles =
-  Random.generate GeneratedTiles << Grid.generator
+generateAtMost2Tiles : Grid -> Cmd Msg
+generateAtMost2Tiles =
+  Random.generate GeneratedTiles << Grid.atMost2Tiles
 
 
 subscriptions : Model -> Sub Msg
@@ -118,7 +121,7 @@ subscriptions _ =
 
 
 view : Model -> H.Html Msg
-view { tally, scoreCardState, gridViewState } =
+view { tally, scoreCardState, gridState } =
   App.View.Main.view
     { header =
         { current = Tally.getCurrent tally
@@ -129,6 +132,6 @@ view { tally, scoreCardState, gridViewState } =
             }
         }
     , onNewGame = ClickedNewGame
-    , gridViewState = gridViewState
+    , gridState = gridState
     , onMoveRight = ClickedMoveRight
     }

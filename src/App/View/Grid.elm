@@ -1,8 +1,8 @@
 module App.View.Grid exposing
-  ( init
-  , ViewState, view
+  ( State, init
   , Msg, update
   , subscriptions
+  , view
   )
 
 
@@ -16,50 +16,55 @@ import Html.Attributes as HA
 import Html.Keyed as HK
 
 
-type ViewState =
-  ViewState State
-
-
-type alias State =
-  { animatedTiles : List AnimatedTile
-  , clock : Animation.Clock
-  }
+type State =
+  State
+    { clock : Animation.Clock
+    , animatedTiles : List AnimatedTile
+    }
 
 
 type alias AnimatedTile =
-  { tile : Tile
-  , factor : Animation
+  { factor : Animation
+  , tile : Tile
   }
+
+
+init : Grid -> State
+init grid =
+  State
+    { clock = 0
+    , animatedTiles =
+        grid
+          |> Grid.toTiles
+          |> List.map toAnimatedTile
+    }
 
 
 toAnimatedTile : Tile -> AnimatedTile
 toAnimatedTile tile =
-  { tile = tile
-  , factor =
+  { factor =
       Animation.animation 0
-        |> Animation.duration 100
-        -- |> Animation.duration 5000
+        |> Animation.duration gridTileMoveDuration
+  , tile = tile
   }
 
 
-init : List Tile -> ViewState
-init tiles =
-  ViewState
-    { animatedTiles =
-        List.map toAnimatedTile tiles
-    , clock = 0
-    }
+gridTileMoveDuration : Float
+gridTileMoveDuration =
+  -- NOTE: See sass/_config.scss for the value of --grid-tile-move-duration.
+  -- They MUST match.
+  100
 
 
 type Msg
   = Tick Animation.TimeDelta
 
 
-update : Msg -> ViewState -> ViewState
-update msg (ViewState state) =
+update : Msg -> State -> State
+update msg (State state) =
   case msg of
     Tick dt ->
-      ViewState { state | clock = state.clock + dt }
+      State { state | clock = state.clock + dt }
 
 
 subscriptions : Sub Msg
@@ -67,8 +72,8 @@ subscriptions =
   BE.onAnimationFrameDelta Tick
 
 
-view : ViewState -> H.Html msg
-view (ViewState { animatedTiles, clock }) =
+view : State -> H.Html msg
+view (State { animatedTiles, clock }) =
   H.div [ HA.class "grid" ]
     [ H.div [ HA.class "grid__background" ]
         [ H.div [ HA.class "grid__cells" ]
@@ -100,21 +105,13 @@ viewGridTiles clock =
 
 
 viewGridTile : Animation.Clock -> AnimatedTile -> (String, H.Html msg)
-viewGridTile clock { tile, factor } =
+viewGridTile clock { factor, tile } =
   let
-    { kind, state, action } =
-      Tile.toInfo tile
-
-    (from, to) =
-      case action of
-        Tile.Stay ->
-          (state.position, state.position)
-
-        Tile.MoveFrom fromPosition ->
-          (fromPosition, state.position)
-
     k =
       String.fromFloat <| Animation.animate clock factor
+
+    { kind, id, value, from, to } =
+      Tile.toInfo tile
 
     (fromRow, fromCol) =
       (from.row, from.col)
@@ -137,14 +134,13 @@ viewGridTile clock { tile, factor } =
       , "calc(" ++ fromTop ++ " + " ++ k ++ " * " ++ "(" ++ toTop ++ " - " ++ fromTop ++ "))"
       )
   in
-  ( String.fromInt state.id
+  ( String.fromInt id
   , H.div
       [ HA.class "grid__tile"
-      -- , HA.class <| "grid__tile--" ++ String.fromInt r ++ "-" ++ String.fromInt c
       , HA.style "left" left
       , HA.style "top" top
       ]
-      [ viewTile kind state.value ]
+      [ viewTile kind value ]
   )
 
 

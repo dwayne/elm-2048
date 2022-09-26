@@ -56,6 +56,8 @@ type Msg
   | GeneratedTiles (Maybe Grid)
   | ClickedMoveRight
   | ClickedMoveLeft
+  | ClickedMoveDown
+  | ClickedMoveUp
   | ChangedGrid Grid.Msg
 
 
@@ -114,6 +116,30 @@ update msg model =
           , Cmd.none
           )
 
+    ClickedMoveDown ->
+      case Grid.moveDown model.grid of
+        Just grid ->
+          ( { model | grid = grid, gridState = Grid.init grid }
+          , generateAtMost2Tiles grid
+          )
+
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
+
+    ClickedMoveUp ->
+      case Grid.moveUp model.grid of
+        Just grid ->
+          ( { model | grid = grid, gridState = Grid.init grid }
+          , generateAtMost2Tiles grid
+          )
+
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
+
     ChangedGrid gridMsg ->
       ( { model | gridState = Grid.update gridMsg model.gridState }
       , Cmd.none
@@ -148,4 +174,6 @@ view { tally, scoreCardState, gridState } =
     , gridState = gridState
     , onMoveRight = ClickedMoveRight
     , onMoveLeft = ClickedMoveLeft
+    , onMoveDown = ClickedMoveDown
+    , onMoveUp = ClickedMoveUp
     }

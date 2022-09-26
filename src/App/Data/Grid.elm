@@ -3,7 +3,7 @@ module App.Data.Grid exposing
   , reset
   , atMost2Tiles
   , toTiles
-  , moveRight, moveLeft
+  , moveRight, moveLeft, moveDown, moveUp
   )
 
 
@@ -101,6 +101,8 @@ toTiles (Grid { tiles }) =
 type Direction
   = Right
   | Left
+  | Down
+  | Up
 
 
 moveRight : Grid -> Maybe Grid
@@ -111,6 +113,16 @@ moveRight =
 moveLeft : Grid -> Maybe Grid
 moveLeft =
   move Left
+
+
+moveDown : Grid -> Maybe Grid
+moveDown =
+  move Down
+
+
+moveUp : Grid -> Maybe Grid
+moveUp =
+  move Up
 
 
 type alias Config =
@@ -162,6 +174,42 @@ move direction (Grid { currentId, tiles })=
                 , isReadyToVacate =
                     \tilePosition lastPosition ->
                       tilePosition.row > lastPosition.row
+                }
+                { currentId = currentId
+                , lastPosition = Position 1 1
+                , tileInCell = Nothing
+                , newTiles = []
+                , atLeastOneTileMoved = False
+                }
+
+        Down ->
+          tiles
+            |> age
+            |> List.sortWith compareDown
+            |> moveHelper
+                { nextLastPosition = \{ col } -> Position 4 col
+                , updateLastPosition = \{ row, col } -> { row = row - 1, col = col }
+                , isReadyToVacate =
+                    \tilePosition lastPosition ->
+                      tilePosition.col > lastPosition.col
+                }
+                { currentId = currentId
+                , lastPosition = Position 4 1
+                , tileInCell = Nothing
+                , newTiles = []
+                , atLeastOneTileMoved = False
+                }
+
+        Up ->
+          tiles
+            |> age
+            |> List.sortWith compareUp
+            |> moveHelper
+                { nextLastPosition = \{ col } -> Position 1 col
+                , updateLastPosition = \{ row, col } -> { row = row + 1, col = col }
+                , isReadyToVacate =
+                    \tilePosition lastPosition ->
+                      tilePosition.col > lastPosition.col
                 }
                 { currentId = currentId
                 , lastPosition = Position 1 1
@@ -300,3 +348,37 @@ compareLeft tile1 tile2 =
     GT
   else
     compare p1.col p2.col
+
+
+compareDown : Tile -> Tile -> Order
+compareDown tile1 tile2 =
+  let
+    p1 =
+      Tile.getPosition tile1
+
+    p2 =
+      Tile.getPosition tile2
+  in
+  if p1.col < p2.col then
+    LT
+  else if p1.col > p2.col then
+    GT
+  else
+    compare p2.row p1.row
+
+
+compareUp : Tile -> Tile -> Order
+compareUp tile1 tile2 =
+  let
+    p1 =
+      Tile.getPosition tile1
+
+    p2 =
+      Tile.getPosition tile2
+  in
+  if p1.col < p2.col then
+    LT
+  else if p1.col > p2.col then
+    GT
+  else
+    compare p1.row p2.row

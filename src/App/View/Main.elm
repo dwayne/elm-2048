@@ -15,11 +15,12 @@ type alias Options msg =
   , onNewGame : msg
   , gridState : Grid.State
   , onMoveRight : msg
+  , onMoveLeft : msg
   }
 
 
 view : Options msg -> H.Html msg
-view { header, onNewGame, gridState, onMoveRight } =
+view { header, onNewGame, gridState, onMoveRight, onMoveLeft } =
   H.main_ [ HA.class "main" ]
     [ H.div [ HA.class "main__header" ] [ Header.view header ]
     , H.div [ HA.class "main__introduction" ] [ Introduction.view onNewGame ]
@@ -30,6 +31,11 @@ view { header, onNewGame, gridState, onMoveRight } =
             , HE.onClick onMoveRight
             ]
             [ H.text "Move Right" ]
+        , H.button
+            [ HA.style "margin-right" "10px"
+            , HE.onClick onMoveLeft
+            ]
+            [ H.text "Move Left" ]
         ]
     , H.div [ HA.class "main__footer" ] [ Footer.view ]
     ]

@@ -98,6 +98,28 @@ toTiles (Grid { tiles }) =
   tiles
 
 
+type Direction
+  = Right
+  | Left
+
+
+moveRight : Grid -> Maybe Grid
+moveRight =
+  move Right
+
+
+moveLeft : Grid -> Maybe Grid
+moveLeft =
+  move Left
+
+
+type alias Config =
+  { nextLastPosition : Position -> Position
+  , updateLastPosition : Position -> Position
+  , isReadyToVacate : Position -> Position -> Bool
+  }
+
+
 type alias MovementState =
   { currentId : Int
   , lastPosition : Position
@@ -107,20 +129,46 @@ type alias MovementState =
   }
 
 
-moveRight : Grid -> Maybe Grid
-moveRight (Grid { currentId, tiles }) =
+move : Direction -> Grid -> Maybe Grid
+move direction (Grid { currentId, tiles })=
   let
     state =
-      tiles
-        |> age
-        |> sortRight
-        |> moveRightHelper
-            { currentId = currentId
-            , lastPosition = Position 1 4
-            , tileInCell = Nothing
-            , newTiles = []
-            , atLeastOneTileMoved = False
-            }
+      case direction of
+        Right ->
+          tiles
+            |> age
+            |> List.sortWith compareRight
+            |> moveHelper
+                { nextLastPosition = \{ row } -> Position row 4
+                , updateLastPosition = \{ row, col } -> { row = row, col = col - 1 }
+                , isReadyToVacate =
+                    \tilePosition lastPosition ->
+                      tilePosition.row > lastPosition.row
+                }
+                { currentId = currentId
+                , lastPosition = Position 1 4
+                , tileInCell = Nothing
+                , newTiles = []
+                , atLeastOneTileMoved = False
+                }
+
+        Left ->
+          tiles
+            |> age
+            |> List.sortWith compareLeft
+            |> moveHelper
+                { nextLastPosition = \{ row } -> Position row 1
+                , updateLastPosition = \{ row, col } -> { row = row, col = col + 1 }
+                , isReadyToVacate =
+                    \tilePosition lastPosition ->
+                      tilePosition.row > lastPosition.row
+                }
+                { currentId = currentId
+                , lastPosition = Position 1 1
+                , tileInCell = Nothing
+                , newTiles = []
+                , atLeastOneTileMoved = False
+                }
   in
   if state.atLeastOneTileMoved then
     Just <|
@@ -132,9 +180,92 @@ moveRight (Grid { currentId, tiles }) =
     Nothing
 
 
-sortRight : List Tile -> List Tile
-sortRight =
-  List.sortWith compareRight
+moveHelper : Config -> MovementState -> List Tile -> MovementState
+moveHelper config state tiles =
+  case tiles of
+    [] ->
+      case state.tileInCell of
+        Nothing ->
+          state
+
+        Just { id, value, from, to } ->
+          { state
+          | lastPosition = to
+          , tileInCell = Nothing
+          , newTiles =
+              state.newTiles ++ [ Tile.old id value from to ]
+          }
+
+    tile :: restTiles ->
+      let
+        currTile =
+          Tile.toInfo tile
+
+        state1 =
+          if config.isReadyToVacate currTile.to state.lastPosition then
+            { state
+            | lastPosition = config.nextLastPosition currTile.to
+            , tileInCell = Nothing
+            , newTiles =
+                (++) state.newTiles <|
+                  case state.tileInCell of
+                    Nothing ->
+                      []
+
+                    Just { id, value, from, to } ->
+                      [ Tile.old id value from to ]
+            }
+          else
+            state
+
+        state2 =
+          case state1.tileInCell of
+            Nothing ->
+              { state1
+              | tileInCell =
+                  Just { currTile | from = currTile.to, to = state1.lastPosition }
+              , atLeastOneTileMoved =
+                  state1.atLeastOneTileMoved || (currTile.to /= state1.lastPosition)
+              }
+
+            Just { id, value, from, to } ->
+              let
+                lastPosition =
+                  config.updateLastPosition state1.lastPosition
+              in
+              if Value.isEqual currTile.value value then
+                { state1
+                | newTiles =
+                    (++) state1.newTiles <|
+                      [ Tile.merged currTile.id currTile.value currTile.to to
+                      , Tile.merged id value from to
+                      , Tile.composite
+                          state1.currentId
+                          (Value.double value)
+                          to
+                      ]
+                , currentId = state1.currentId + 1
+                , tileInCell = Nothing
+                , lastPosition = lastPosition
+                , atLeastOneTileMoved = True
+                }
+              else
+                { state1
+                | newTiles =
+                    state1.newTiles ++ [ Tile.old id value from to ]
+                , tileInCell =
+                    Just { currTile | from = currTile.to, to = lastPosition }
+                , lastPosition = lastPosition
+                , atLeastOneTileMoved =
+                    state1.atLeastOneTileMoved || (currTile.to /= lastPosition)
+                }
+      in
+      moveHelper config state2 restTiles
+
+
+age : List Tile -> List Tile
+age =
+  List.filterMap Tile.age
 
 
 compareRight : Tile -> Tile -> Order
@@ -154,121 +285,6 @@ compareRight tile1 tile2 =
     compare p2.col p1.col
 
 
-moveRightHelper : MovementState -> List Tile -> MovementState
-moveRightHelper state tiles =
-  case tiles of
-    [] ->
-      case state.tileInCell of
-        Nothing ->
-          state
-
-        Just { id, value, from, to } ->
-          { state
-          | lastPosition = to
-          , tileInCell = Nothing
-          , newTiles =
-              state.newTiles ++ [ Tile.old id value from to ]
-          }
-
-    tile :: restTiles ->
-      let
-        currTile =
-          Tile.toInfo tile
-
-        state1 =
-          if currTile.to.row > state.lastPosition.row then
-            { state
-            | lastPosition = Position currTile.to.row 4
-            , tileInCell = Nothing
-            , newTiles =
-                (++) state.newTiles <|
-                  case state.tileInCell of
-                    Nothing ->
-                      []
-
-                    Just { id, value, from, to } ->
-                      [ Tile.old id value from to ]
-            }
-          else
-            state
-
-        state2 =
-          case state1.tileInCell of
-            Nothing ->
-              { state1
-              | tileInCell =
-                  Just { currTile | from = currTile.to, to = state1.lastPosition }
-              , atLeastOneTileMoved =
-                  state1.atLeastOneTileMoved || (currTile.to /= state1.lastPosition)
-              }
-
-            Just { id, value, from, to } ->
-              let
-                lastPosition =
-                  Position
-                    state1.lastPosition.row
-                    (state1.lastPosition.col - 1)
-              in
-              if Value.isEqual currTile.value value then
-                { state1
-                | newTiles =
-                    (++) state1.newTiles <|
-                      [ Tile.merged currTile.id currTile.value currTile.to to
-                      , Tile.merged id value from to
-                      , Tile.composite
-                          state1.currentId
-                          (Value.double value)
-                          to
-                      ]
-                , currentId = state1.currentId + 1
-                , tileInCell = Nothing
-                , lastPosition = lastPosition
-                , atLeastOneTileMoved = True
-                }
-              else
-                { state1
-                | newTiles =
-                    state1.newTiles ++ [ Tile.old id value from to ]
-                , tileInCell =
-                    Just { currTile | from = currTile.to, to = lastPosition }
-                , lastPosition = lastPosition
-                , atLeastOneTileMoved =
-                    state1.atLeastOneTileMoved || (currTile.to /= lastPosition)
-                }
-      in
-      moveRightHelper state2 restTiles
-
-
-moveLeft : Grid -> Maybe Grid
-moveLeft (Grid { currentId, tiles }) =
-  let
-    state =
-      tiles
-        |> age
-        |> sortLeft
-        |> moveLeftHelper
-            { currentId = currentId
-            , lastPosition = Position 1 1
-            , tileInCell = Nothing
-            , newTiles = []
-            , atLeastOneTileMoved = False
-            }
-  in
-  if state.atLeastOneTileMoved then
-    Just <|
-      Grid
-        { currentId = state.currentId
-        , tiles = state.newTiles
-        }
-  else
-    Nothing
-
-
-sortLeft : List Tile -> List Tile
-sortLeft =
-  List.sortWith compareLeft
-
-
 compareLeft : Tile -> Tile -> Order
 compareLeft tile1 tile2 =
   let
@@ -284,93 +300,3 @@ compareLeft tile1 tile2 =
     GT
   else
     compare p1.col p2.col
-
-
-moveLeftHelper : MovementState -> List Tile -> MovementState
-moveLeftHelper state tiles =
-  case tiles of
-    [] ->
-      case state.tileInCell of
-        Nothing ->
-          state
-
-        Just { id, value, from, to } ->
-          { state
-          | lastPosition = to
-          , tileInCell = Nothing
-          , newTiles =
-              state.newTiles ++ [ Tile.old id value from to ]
-          }
-
-    tile :: restTiles ->
-      let
-        currTile =
-          Tile.toInfo tile
-
-        state1 =
-          if currTile.to.row > state.lastPosition.row then
-            { state
-            | lastPosition = Position currTile.to.row 1
-            , tileInCell = Nothing
-            , newTiles =
-                (++) state.newTiles <|
-                  case state.tileInCell of
-                    Nothing ->
-                      []
-
-                    Just { id, value, from, to } ->
-                      [ Tile.old id value from to ]
-            }
-          else
-            state
-
-        state2 =
-          case state1.tileInCell of
-            Nothing ->
-              { state1
-              | tileInCell =
-                  Just { currTile | from = currTile.to, to = state1.lastPosition }
-              , atLeastOneTileMoved =
-                  state1.atLeastOneTileMoved || (currTile.to /= state1.lastPosition)
-              }
-
-            Just { id, value, from, to } ->
-              let
-                lastPosition =
-                  Position
-                    state1.lastPosition.row
-                    (state1.lastPosition.col + 1)
-              in
-              if Value.isEqual currTile.value value then
-                { state1
-                | newTiles =
-                    (++) state1.newTiles <|
-                      [ Tile.merged currTile.id currTile.value currTile.to to
-                      , Tile.merged id value from to
-                      , Tile.composite
-                          state1.currentId
-                          (Value.double value)
-                          to
-                      ]
-                , currentId = state1.currentId + 1
-                , tileInCell = Nothing
-                , lastPosition = lastPosition
-                , atLeastOneTileMoved = True
-                }
-              else
-                { state1
-                | newTiles =
-                    state1.newTiles ++ [ Tile.old id value from to ]
-                , tileInCell =
-                    Just { currTile | from = currTile.to, to = lastPosition }
-                , lastPosition = lastPosition
-                , atLeastOneTileMoved =
-                    state1.atLeastOneTileMoved || (currTile.to /= lastPosition)
-                }
-      in
-      moveLeftHelper state2 restTiles
-
-
-age : List Tile -> List Tile
-age =
-  List.filterMap Tile.age

@@ -1,8 +1,10 @@
 module Sandbox.Main exposing (main)
 
 
+import App.Data.Grid as Grid
 import App.Data.Points as Points exposing (Points)
 import App.Data.Tally as Tally exposing (Tally)
+import App.Data.Tile.Value as Value
 import App.View.Footer as Footer
 import App.View.Grid as Grid
 import App.View.Header as Header
@@ -122,8 +124,24 @@ update msg model =
 
 pointsGenerator : Random.Generator Points
 pointsGenerator =
-  Random.uniform 4 [ 8, 12, 16, 20, 24, 28, 32, 36, 40 ]
-    |> Random.map Points.fromInt
+  let
+    four =
+      Points.fromValue Value.four
+
+    makeList n accum list =
+      if n < 1 then
+        list
+      else
+        let
+          newAccum =
+            Points.add accum four
+        in
+        makeList (n - 1) newAccum (list ++ [ newAccum ])
+
+  in
+  makeList 10 four []
+    |> Random.uniform four
+
 
 
 -- VIEW
@@ -223,7 +241,7 @@ viewGrid : H.Html msg
 viewGrid =
   H.div []
     [ H.h2 [] [ H.text "Grid" ]
-    , Grid.view
+    , Grid.view <| Grid.init Grid.empty
     ]
 
 

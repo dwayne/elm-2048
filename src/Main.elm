@@ -43,7 +43,7 @@ init _ =
     , grid = grid
     , gridState = Grid.init grid
     }
-  , generateAtMost2Tiles grid
+  , insertAtMost2Tiles grid
   )
 
 
@@ -53,11 +53,8 @@ init _ =
 type Msg
   = ChangedScoreCard ScoreCard.Msg
   | ClickedNewGame
-  | GeneratedTiles (Maybe Grid)
-  | ClickedMoveRight
-  | ClickedMoveLeft
-  | ClickedMoveDown
-  | ClickedMoveUp
+  | InsertedTiles (Maybe Grid)
+  | ClickedMove Grid.Direction
   | ChangedGrid Grid.Msg
 
 
@@ -77,10 +74,10 @@ update msg model =
           Grid.reset model.grid
       in
       ( { model | grid = grid, gridState = Grid.init grid }
-      , generateAtMost2Tiles grid
+      , insertAtMost2Tiles grid
       )
 
-    GeneratedTiles maybeGrid ->
+    InsertedTiles maybeGrid ->
       case maybeGrid of
         Just grid ->
           ( { model | grid = grid, gridState = Grid.init grid }
@@ -92,47 +89,11 @@ update msg model =
           , Cmd.none
           )
 
-    ClickedMoveRight ->
-      case Grid.moveRight model.grid of
+    ClickedMove direction ->
+      case Grid.move direction model.grid of
         Just grid ->
           ( { model | grid = grid, gridState = Grid.init grid }
-          , generateAtMost2Tiles grid
-          )
-
-        Nothing ->
-          ( model
-          , Cmd.none
-          )
-
-    ClickedMoveLeft ->
-      case Grid.moveLeft model.grid of
-        Just grid ->
-          ( { model | grid = grid, gridState = Grid.init grid }
-          , generateAtMost2Tiles grid
-          )
-
-        Nothing ->
-          ( model
-          , Cmd.none
-          )
-
-    ClickedMoveDown ->
-      case Grid.moveDown model.grid of
-        Just grid ->
-          ( { model | grid = grid, gridState = Grid.init grid }
-          , generateAtMost2Tiles grid
-          )
-
-        Nothing ->
-          ( model
-          , Cmd.none
-          )
-
-    ClickedMoveUp ->
-      case Grid.moveUp model.grid of
-        Just grid ->
-          ( { model | grid = grid, gridState = Grid.init grid }
-          , generateAtMost2Tiles grid
+          , insertAtMost2Tiles grid
           )
 
         Nothing ->
@@ -146,9 +107,9 @@ update msg model =
       )
 
 
-generateAtMost2Tiles : Grid -> Cmd Msg
-generateAtMost2Tiles =
-  Random.generate GeneratedTiles << Grid.atMost2Tiles
+insertAtMost2Tiles : Grid -> Cmd Msg
+insertAtMost2Tiles =
+  Random.generate InsertedTiles << Grid.insertAtMost2Tiles
 
 
 subscriptions : Model -> Sub Msg
@@ -172,8 +133,8 @@ view { tally, scoreCardState, gridState } =
         }
     , onNewGame = ClickedNewGame
     , gridState = gridState
-    , onMoveRight = ClickedMoveRight
-    , onMoveLeft = ClickedMoveLeft
-    , onMoveDown = ClickedMoveDown
-    , onMoveUp = ClickedMoveUp
+    , onMoveRight = ClickedMove Grid.Right
+    , onMoveLeft = ClickedMove Grid.Left
+    , onMoveDown = ClickedMove Grid.Down
+    , onMoveUp = ClickedMove Grid.Up
     }

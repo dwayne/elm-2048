@@ -1,9 +1,8 @@
 module App.Data.Grid exposing
-  ( Grid, empty
-  , reset
-  , atMost2Tiles
+  ( Grid, empty, reset
+  , insertAtMost2Tiles
   , toTiles
-  , moveRight, moveLeft, moveDown, moveUp
+  , Direction(..), move
   )
 
 
@@ -37,8 +36,8 @@ reset (Grid { currentId }) =
     }
 
 
-atMost2Tiles : Grid -> Random.Generator (Maybe Grid)
-atMost2Tiles (Grid { currentId, tiles } as grid) =
+insertAtMost2Tiles : Grid -> Random.Generator (Maybe Grid)
+insertAtMost2Tiles (Grid { currentId, tiles } as grid) =
   let
     unavailablePositions =
       List.map Tile.getPosition tiles
@@ -103,26 +102,6 @@ type Direction
   | Left
   | Down
   | Up
-
-
-moveRight : Grid -> Maybe Grid
-moveRight =
-  move Right
-
-
-moveLeft : Grid -> Maybe Grid
-moveLeft =
-  move Left
-
-
-moveDown : Grid -> Maybe Grid
-moveDown =
-  move Down
-
-
-moveUp : Grid -> Maybe Grid
-moveUp =
-  move Up
 
 
 type alias Config =

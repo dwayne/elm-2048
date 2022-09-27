@@ -6,93 +6,90 @@
 
     <title>Main</title>
     <link rel="stylesheet" href="/index.css">
-    <style>
-      body {
-        margin: 80px 0;
-      }
-    </style>
   </head>
-  <body>
-    <main class="main">
-      <div class="main__header">
-        <header class="header">
-          <div class="header__title">
-            <h1 class="title">2048</h1>
-          </div>
-          <div class="header__scores">
-            <div class="score-card">
-              <div class="score-card__score">
-                <div class="score">
-                  <h2 class="score__title">Score</h2>
-                  <div class="score__total">
-                    <div class="score__value">0</div>
+  <body class="body">
+    <main class="main" tabindex="-1" autofocus>
+      <div class="main__body">
+        <div class="main__header">
+          <header class="header">
+            <div class="header__title">
+              <h1 class="title">2048</h1>
+            </div>
+            <div class="header__scores">
+              <div class="score-card">
+                <div class="score-card__score">
+                  <div class="score">
+                    <h2 class="score__title">Score</h2>
+                    <div class="score__total">
+                      <div class="score__value">0</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="score-card__score">
-                <div class="score">
-                  <h2 class="score__title">Best</h2>
-                  <div class="score__total">
-                    <div class="score__value">0</div>
+                <div class="score-card__score">
+                  <div class="score">
+                    <h2 class="score__title">Best</h2>
+                    <div class="score__total">
+                      <div class="score__value">0</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
-      </div>
-      <div class="main__introduction">
-        <div class="introduction">
-          <div class="introduction__item">
-            <p class="m0">Join the numbers and get to the <strong class="nowrap">2048 tile!</strong></p>
-          </div>
-          <div class="introduction__item">
-            <button class="button">New Game</button>
-          </div>
+          </header>
         </div>
-      </div>
-      <div class="main__grid">
-        <div class="grid">
-          <div class="grid__background">
-            <div class="grid__cells">
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
-              <div class="grid__cell"></div>
+        <div class="main__introduction">
+          <div class="introduction">
+            <div class="introduction__item">
+              <p class="m0">Join the numbers and get to the <strong class="nowrap">2048 tile!</strong></p>
+            </div>
+            <div class="introduction__item">
+              <button class="button">New Game</button>
             </div>
           </div>
         </div>
-      </div>
-      <div class="main__footer">
-        <footer>
-          <p class="m0">
-            <strong class="uppercase">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
-          </p>
+        <div class="main__grid">
+          <div class="grid">
+            <div class="grid__background">
+              <div class="grid__cells">
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+                <div class="grid__cell"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="main__footer">
+          <footer>
+            <p class="m0">
+              <strong class="uppercase">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+            </p>
 
-          <hr class="separator">
+            <hr class="separator">
 
-          <p class="m0">
-            <strong class="uppercase">Note:</strong> This site is an <a href="https://elm-lang.org/" target="_blank">Elm</a> clone of the original 2048 JavaScript game that was created by <a href="https://github.com/gabrielecirulli" target="_blank">Gabriele Cirulli</a>.
-          </p>
+            <p class="m0">
+              <strong class="uppercase">Note:</strong> This site is an <a href="https://elm-lang.org/" target="_blank">Elm</a> clone of the original 2048 JavaScript game that was created by <a href="https://github.com/gabrielecirulli" target="_blank">Gabriele Cirulli</a>.
+            </p>
 
-          <hr class="separator">
+            <hr class="separator">
 
-          <p class="m0">
-            Developed by <a href="https://github.com/dwayne" target="_blank">Dwayne Crooks</a>. 2048 is based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer</a>.
-          </p>
-        </footer>
+            <p class="m0">
+              Developed by <a href="https://github.com/dwayne" target="_blank">Dwayne Crooks</a>. 2048 is based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer</a>.
+            </p>
+          </footer>
+        </div>
       </div>
     </main>
   </body>

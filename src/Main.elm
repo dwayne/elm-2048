@@ -54,7 +54,7 @@ type Msg
   = ChangedScoreCard ScoreCard.Msg
   | ClickedNewGame
   | InsertedTiles (Maybe Grid)
-  | ClickedMove Grid.Direction
+  | Moved Grid.Direction
   | ChangedGrid Grid.Msg
 
 
@@ -89,7 +89,7 @@ update msg model =
           , Cmd.none
           )
 
-    ClickedMove direction ->
+    Moved direction ->
       case Grid.move direction model.grid of
         Just grid ->
           ( { model | grid = grid, gridState = Grid.init grid }
@@ -131,10 +131,7 @@ view { tally, scoreCardState, gridState } =
             , onChange = ChangedScoreCard
             }
         }
-    , onNewGame = ClickedNewGame
     , gridState = gridState
-    , onMoveRight = ClickedMove Grid.Right
-    , onMoveLeft = ClickedMove Grid.Left
-    , onMoveDown = ClickedMove Grid.Down
-    , onMoveUp = ClickedMove Grid.Up
+    , onMove = Moved
+    , onNewGame = ClickedNewGame
     }

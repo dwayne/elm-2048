@@ -1,4 +1,9 @@
 .main {
+  outline: 0;
+  padding: 80px 0;
+}
+
+.main__body {
   box-sizing: content-box;
   width: 280px;
   margin: 0 auto;
@@ -18,7 +23,7 @@
 }
 
 @media screen and (min-width: 520px) {
-  .main {
+  .main__body {
     width: 500px;
     padding: 0 10px;
   }

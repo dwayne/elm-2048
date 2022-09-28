@@ -1,6 +1,7 @@
 module App.Data.Tile exposing
   ( Tile, new, composite, merged, old
   , getPosition
+  , is2048
   , age
   , Info, toInfo
   , toPoints
@@ -73,6 +74,23 @@ getPosition tile =
 
     Old { position } _ ->
       position
+
+
+is2048 : Tile -> Bool
+is2048 tile =
+  Value.is2048 <|
+    case tile of
+      New { value } ->
+        value
+
+      Composite { value } ->
+        value
+
+      Merged { value } _ ->
+        value
+
+      Old { value } _ ->
+        value
 
 
 age : Tile -> Maybe Tile

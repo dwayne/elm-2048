@@ -1,7 +1,7 @@
 module App.Data.Tile.Value exposing
   ( Value, two, four
   , twoOrFour
-  , isEqual
+  , isEqual, is2048
   , double
   , toInt, toString
   )
@@ -32,6 +32,11 @@ twoOrFour =
 isEqual : Value -> Value -> Bool
 isEqual (Value v1) (Value v2) =
   v1 == v2
+
+
+is2048 : Value -> Bool
+is2048 (Value v) =
+  v == 2048
 
 
 double : Value -> Value

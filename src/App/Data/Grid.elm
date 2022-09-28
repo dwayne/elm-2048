@@ -1,6 +1,6 @@
 module App.Data.Grid exposing
   ( Grid, empty, reset
-  , hasMoves
+  , has2048, hasMoves
   , insertAtMost2Tiles
   , toTiles, toPoints
   , Direction(..), move
@@ -36,6 +36,11 @@ reset (Grid { currentId }) =
     { currentId = currentId
     , tiles = []
     }
+
+
+has2048 : Grid -> Bool
+has2048 (Grid { tiles }) =
+  List.any Tile.is2048 tiles
 
 
 hasMoves : Grid -> Bool

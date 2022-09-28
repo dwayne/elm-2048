@@ -24,7 +24,7 @@
   --tile-pop-delay: var(--grid-tile-move-duration);
 
   --tile-disappear-duration: 0s;
-  --tile-disappear-delay: var(--grid-tile-move-duration);
+  --tile-disappear-delay: calc(var(--grid-tile-move-duration) + var(--tile-pop-duration));
 
   --message-fade-in-duration: 800ms;
   --message-fade-in-delay: 1200ms;

@@ -14,6 +14,7 @@ import Browser.Events as BE
 import Html as H
 import Html.Attributes as HA
 import Html.Keyed as HK
+import App.Lib.Ease as Ease
 
 
 type State =
@@ -45,6 +46,7 @@ toAnimatedTile tile =
   { factor =
       Animation.animation 0
         |> Animation.duration gridTileMoveDuration
+        |> Animation.ease Ease.inOut
   , tile = tile
   }
 
@@ -139,6 +141,7 @@ viewGridTile clock { factor, tile } =
       [ HA.class "grid__tile"
       , HA.style "left" left
       , HA.style "top" top
+      , HA.style "will-change" "left, top"
       ]
       [ viewTile kind value ]
   )

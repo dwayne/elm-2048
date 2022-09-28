@@ -2,12 +2,12 @@ module App.Data.Tile exposing
   ( Tile, new, composite, merged, old
   , getPosition
   , age
-
-  , Info
-  , toInfo
+  , Info, toInfo
+  , toPoints
   )
 
 
+import App.Data.Points as Points exposing (Points)
 import App.Data.Tile.Position as Position exposing (Position)
 import App.Data.Tile.Value as Value exposing (Value)
 
@@ -78,11 +78,17 @@ getPosition tile =
 age : Tile -> Maybe Tile
 age tile =
   case tile of
+    New state ->
+      Just <| Old state Stay
+
+    Composite state ->
+      Just <| Old state Stay
+
     Merged _ _ ->
       Nothing
 
-    _ ->
-      Just tile
+    Old state _ ->
+      Just <| Old state Stay
 
 
 type alias Info =
@@ -140,3 +146,13 @@ toInfo tile =
               from
       , to = position
       }
+
+
+toPoints : Tile -> Points
+toPoints tile =
+  case tile of
+    Composite { value } ->
+      Points.fromValue value
+
+    _ ->
+      Points.zero

@@ -1,11 +1,13 @@
 module App.Data.Grid exposing
   ( Grid, empty, reset
+  , hasMoves
   , insertAtMost2Tiles
-  , toTiles
+  , toTiles, toPoints
   , Direction(..), move
   )
 
 
+import App.Data.Points as Points exposing (Points)
 import App.Data.Tile as Tile exposing (Tile)
 import App.Data.Tile.Position as Position exposing (Position)
 import App.Data.Tile.Value as Value exposing (Value)
@@ -34,6 +36,25 @@ reset (Grid { currentId }) =
     { currentId = currentId
     , tiles = []
     }
+
+
+hasMoves : Grid -> Bool
+hasMoves (Grid { tiles } as grid) =
+  let
+    hasAvailablePositions =
+      tiles
+        |> List.map Tile.getPosition
+        |> Position.availablePositions
+        |> List.isEmpty
+        |> not
+
+    canMoveRight =
+      \_ -> not <| move Right grid == Nothing
+
+    canMoveUp =
+      \_ -> not <| move Up grid == Nothing
+  in
+  hasAvailablePositions || canMoveRight () || canMoveUp ()
 
 
 insertAtMost2Tiles : Grid -> Random.Generator (Maybe Grid)
@@ -95,6 +116,13 @@ addTiles valueAndPositions currentId tiles =
 toTiles : Grid -> List Tile
 toTiles (Grid { tiles }) =
   tiles
+
+
+toPoints : Grid -> Points
+toPoints (Grid { tiles }) =
+  tiles
+    |> List.map Tile.toPoints
+    |> List.foldr Points.add Points.zero
 
 
 type Direction

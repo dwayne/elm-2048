@@ -1,5 +1,6 @@
 module App.Data.Points exposing
   ( Points, zero, fromValue
+  , isZero
   , add, max
   , toString
   )
@@ -20,6 +21,11 @@ zero =
 fromValue : Value -> Points
 fromValue =
   Points << Value.toInt
+
+
+isZero : Points -> Bool
+isZero (Points n) =
+  n == 0
 
 
 add : Points -> Points -> Points

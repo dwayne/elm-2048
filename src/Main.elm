@@ -2,6 +2,7 @@ module Main exposing (main)
 
 
 import App.Data.Grid as Grid exposing (Grid)
+import App.Data.Points as Points
 import App.Data.Tally as Tally exposing (Tally)
 import App.View.Grid as Grid
 import App.View.Main
@@ -73,16 +74,29 @@ update msg model =
         grid =
           Grid.reset model.grid
       in
-      ( { model | grid = grid, gridState = Grid.init grid }
+      ( { model
+        | tally = Tally.resetCurrent model.tally
+        , grid = grid
+        , gridState = Grid.init grid
+        }
       , insertAtMost2Tiles grid
       )
 
     InsertedTiles maybeGrid ->
       case maybeGrid of
         Just grid ->
+          let
+            message =
+              if Grid.hasMoves grid then
+                "There are moves"
+              else
+                -- Game over
+                "No moves"
+          in
           ( { model | grid = grid, gridState = Grid.init grid }
           , Cmd.none
           )
+          |> Debug.log message
 
         Nothing ->
           ( model
@@ -92,7 +106,23 @@ update msg model =
     Moved direction ->
       case Grid.move direction model.grid of
         Just grid ->
-          ( { model | grid = grid, gridState = Grid.init grid }
+          let
+            points =
+              Grid.toPoints grid
+
+            model1 =
+              { model | grid = grid, gridState = Grid.init grid }
+
+            model2 =
+              if Points.isZero points then
+                model1
+              else
+                { model1
+                | tally = Tally.addPoints points model1.tally
+                , scoreCardState = ScoreCard.addDelta points model1.scoreCardState
+                }
+          in
+          ( model2
           , insertAtMost2Tiles grid
           )
 

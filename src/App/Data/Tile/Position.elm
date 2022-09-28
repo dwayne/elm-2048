@@ -1,4 +1,8 @@
-module App.Data.Tile.Position exposing (Position, selectAtMost2)
+module App.Data.Tile.Position exposing
+  ( Position
+  , availablePositions
+  , selectAtMost2
+  )
 
 
 import App.Lib.Random exposing (selectAtMostN)
@@ -12,19 +16,19 @@ type alias Position =
   }
 
 
+availablePositions : List Position -> List Position
+availablePositions unavailablePositions =
+  unavailablePositions
+    |> List.map (\{ row, col } -> (row, col))
+    |> Set.fromList
+    |> Set.diff allPositions
+    |> Set.toList
+    |> List.map (\(row, col) -> Position row col)
+
+
 selectAtMost2 : List Position -> Random.Generator (List Position)
-selectAtMost2 unavailablePositions =
-  let
-    availablePositions =
-      unavailablePositions
-        |> List.map (\{ row, col } -> (row, col))
-        |> Set.fromList
-        |> Set.diff allPositions
-        |> Set.toList
-        |> List.map (\(row, col) -> Position row col)
-  in
-  selectAtMostN 2 availablePositions
-    |> Random.map Tuple.first
+selectAtMost2 =
+  availablePositions >> selectAtMostN 2 >> Random.map Tuple.first
 
 
 allPositions : Set (Int, Int)

@@ -26,11 +26,19 @@ main =
 
 
 type alias Model =
-  { tally : Tally
+  { status : Status
+  , tally : Tally
   , scoreCardState : ScoreCard.State
   , grid : Grid
   , gridState : Grid.State
   }
+
+
+type Status
+  = Playing
+  | Won
+  | Loss
+  | KeepPlaying
 
 
 init : () -> (Model, Cmd Msg)
@@ -39,7 +47,8 @@ init _ =
     grid =
       Grid.empty
   in
-  ( { tally = Tally.zero
+  ( { status = Playing
+    , tally = Tally.zero
     , scoreCardState = ScoreCard.init
     , grid = grid
     , gridState = Grid.init grid
@@ -61,6 +70,22 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
+  case model.status of
+    Playing ->
+      updatePlaying msg model
+
+    Won ->
+      updateGameOver msg model
+
+    Loss ->
+      updateGameOver msg model
+
+    KeepPlaying ->
+      updateKeepPlaying msg model
+
+
+updatePlaying : Msg -> Model -> (Model, Cmd Msg)
+updatePlaying msg model =
   case msg of
     ChangedScoreCard scoreCardMsg ->
       ( { model
@@ -85,18 +110,133 @@ update msg model =
     InsertedTiles maybeGrid ->
       case maybeGrid of
         Just grid ->
-          let
-            message =
-              if Grid.hasMoves grid then
-                "There are moves"
-              else
-                -- Game over
-                "No moves"
-          in
-          ( { model | grid = grid, gridState = Grid.init grid }
+          if Grid.has2048 grid then
+            ( { model | status = Won, grid = grid, gridState = Grid.init grid }
+            , Cmd.none
+            )
+          else if Grid.hasMoves grid then
+            ( { model | grid = grid, gridState = Grid.init grid }
+            , Cmd.none
+            )
+          else
+            ( { model | status = Loss, grid = grid, gridState = Grid.init grid }
+            , Cmd.none
+            )
+
+        Nothing ->
+          ( model
           , Cmd.none
           )
-          |> Debug.log message
+
+    Moved direction ->
+      case Grid.move direction model.grid of
+        Just grid ->
+          let
+            points =
+              Grid.toPoints grid
+
+            model1 =
+              { model | grid = grid, gridState = Grid.init grid }
+
+            model2 =
+              if Points.isZero points then
+                model1
+              else
+                { model1
+                | tally = Tally.addPoints points model1.tally
+                , scoreCardState = ScoreCard.addDelta points model1.scoreCardState
+                }
+          in
+          ( model2
+          , insertAtMost2Tiles grid
+          )
+
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
+
+    ChangedGrid gridMsg ->
+      ( { model | gridState = Grid.update gridMsg model.gridState }
+      , Cmd.none
+      )
+
+
+updateGameOver : Msg -> Model -> (Model, Cmd Msg)
+updateGameOver msg model =
+  case msg of
+    ChangedScoreCard scoreCardMsg ->
+      ( { model
+        | scoreCardState = ScoreCard.update scoreCardMsg model.scoreCardState
+        }
+      , Cmd.none
+      )
+
+    ClickedNewGame ->
+      let
+        grid =
+          Grid.reset model.grid
+      in
+      ( { model
+        | status = Playing
+        , tally = Tally.resetCurrent model.tally
+        , grid = grid
+        , gridState = Grid.init grid
+        }
+      , insertAtMost2Tiles grid
+      )
+
+    InsertedTiles _ ->
+      ( model
+      , Cmd.none
+      )
+
+    Moved _ ->
+      ( model
+      , Cmd.none
+      )
+
+    ChangedGrid gridMsg ->
+      ( { model | gridState = Grid.update gridMsg model.gridState }
+      , Cmd.none
+      )
+
+
+updateKeepPlaying : Msg -> Model -> (Model, Cmd Msg)
+updateKeepPlaying msg model =
+  case msg of
+    ChangedScoreCard scoreCardMsg ->
+      ( { model
+        | scoreCardState = ScoreCard.update scoreCardMsg model.scoreCardState
+        }
+      , Cmd.none
+      )
+
+    ClickedNewGame ->
+      let
+        grid =
+          Grid.reset model.grid
+      in
+      ( { model
+        | status = Playing
+        , tally = Tally.resetCurrent model.tally
+        , grid = grid
+        , gridState = Grid.init grid
+        }
+      , insertAtMost2Tiles grid
+      )
+
+    InsertedTiles maybeGrid ->
+      case maybeGrid of
+        Just grid ->
+          if Grid.hasMoves grid then
+            ( { model | grid = grid, gridState = Grid.init grid }
+            , Cmd.none
+            )
+          else
+            ( { model | status = Loss, grid = grid, gridState = Grid.init grid }
+            , Cmd.none
+            )
 
         Nothing ->
           ( model

@@ -1,5 +1,6 @@
 @use "colors";
 @use "fonts";
+@use "responsive";
 
 *,
 *::before,
@@ -8,6 +9,8 @@
 }
 
 body {
+  margin: 0;
+
   font-family: fonts.$clearSans;
   font-size: 15px;
   line-height: 1.5;
@@ -16,14 +19,10 @@ body {
   color: colors.$sandstone;
 }
 
-@media screen and (min-width: 520px) {
+@include responsive.forLargeScreens {
   body {
     font-size: 18px;
   }
-}
-
-.body {
-  margin: 0;
 }
 
 a {

@@ -1,3 +1,5 @@
+@use "responsive";
+
 :root {
   // Grid
 
@@ -30,7 +32,7 @@
   --message-fade-in-delay: 1200ms;
 }
 
-@media screen and (min-width: 520px) {
+@include responsive.forLargeScreens {
   :root {
     // Grid
 

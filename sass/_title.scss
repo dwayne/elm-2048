@@ -1,3 +1,5 @@
+@use "responsive";
+
 .title {
   margin: 0;
 
@@ -5,7 +7,7 @@
   font-weight: bold;
 }
 
-@media screen and (min-width: 520px) {
+@include responsive.forLargeScreens {
   .title {
     font-size: 80px;
   }

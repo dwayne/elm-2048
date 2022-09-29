@@ -35,10 +35,9 @@
       .score__total {
         font-size: 25px;
         position: relative;
-        /* outline: 1px solid pink; */
       }
 
-      .score__current {
+      .score__value {
         color: white;
       }
 
@@ -70,12 +69,12 @@
 
     <h2>Score</h2>
 
-    <p>This is a work in progress.</p>
+    <p>This is how the original works.</p>
 
     <div class="score">
       <div class="score__title">Score</div>
       <div class="score__total">
-        <span class="score__current">10000000</span>
+        <span class="score__value">10000000</span>
       </div>
     </div>
 
@@ -83,7 +82,7 @@
       <button id="add4">+4</button>
     </p>
     <script>
-      // Question: Does this approach work in Elm?
+      // Question: Will this approach work in Elm?
 
       const scoreTotal = document.querySelector('.score__total');
       const add4 = document.getElementById('add4');
@@ -106,7 +105,7 @@
     <div class="score">
       <div class="score__title">Best</div>
       <div class="score__total">
-        <span class="score__current">500</span>
+        <span class="score__value">500</span>
       </div>
     </div>
   </body>

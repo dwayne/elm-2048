@@ -66,9 +66,12 @@ view { delta } =
     , H.h2 [] [ H.text "Score" ]
     , H.div [ HA.class "score" ]
         [ H.div [ HA.class "score__title" ] [ H.text "Score" ]
-        , HK.node "div" [ HA.class "score__total" ]
-            ([ ("score__current", H.span [ HA.class "score__current" ] [ H.text "10000000" ])
-            ] ++ List.map viewScoreDelta delta)
+        , HK.node "div" [ HA.class "score__total" ] <|
+            [ ( "score__value"
+              , H.span [ HA.class "score__value" ] [ H.text "10000000" ]
+              )
+            ]
+            ++ List.map viewScoreDelta delta
         ]
     , H.p [] [ H.button [ HE.onClick ClickedPlus4 ] [ H.text "+4" ] ]
     ]

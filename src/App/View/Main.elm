@@ -14,6 +14,7 @@ import Json.Decode as JD
 
 type alias Options msg =
   { header : Header.Options msg
+  , message : Grid.Message msg
   , gridState : Grid.State
   , onMove : Grid.Direction -> msg
   , onNewGame : msg
@@ -21,7 +22,7 @@ type alias Options msg =
 
 
 view : Options msg -> H.Html msg
-view { header, gridState, onMove, onNewGame } =
+view { header, message, gridState, onMove, onNewGame } =
   H.main_
     [ HA.class "main"
     , HA.tabindex -1
@@ -31,7 +32,7 @@ view { header, gridState, onMove, onNewGame } =
     [ H.div [ HA.class "main__body" ]
         [ H.div [ HA.class "main__header" ] [ Header.view header ]
         , H.div [ HA.class "main__introduction" ] [ Introduction.view onNewGame ]
-        , H.div [ HA.class "main__grid" ] [ Grid.view gridState ]
+        , H.div [ HA.class "main__grid" ] [ Grid.view message gridState ]
         , H.div [ HA.class "main__footer" ] [ Footer.view ]
         ]
     ]

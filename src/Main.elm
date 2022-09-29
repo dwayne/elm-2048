@@ -63,6 +63,7 @@ init _ =
 type Msg
   = ChangedScoreCard ScoreCard.Msg
   | ClickedNewGame
+  | ClickedKeepPlaying
   | InsertedTiles (Maybe Grid)
   | Moved Grid.Direction
   | ChangedGrid Grid.Msg
@@ -105,6 +106,11 @@ updatePlaying msg model =
         , gridState = Grid.init grid
         }
       , insertAtMost2Tiles grid
+      )
+
+    ClickedKeepPlaying ->
+      ( model
+      , Cmd.none
       )
 
     InsertedTiles maybeGrid ->
@@ -186,6 +192,11 @@ updateGameOver msg model =
       , insertAtMost2Tiles grid
       )
 
+    ClickedKeepPlaying ->
+      ( { model | status = KeepPlaying }
+      , Cmd.none
+      )
+
     InsertedTiles _ ->
       ( model
       , Cmd.none
@@ -224,6 +235,11 @@ updateKeepPlaying msg model =
         , gridState = Grid.init grid
         }
       , insertAtMost2Tiles grid
+      )
+
+    ClickedKeepPlaying ->
+      ( model
+      , Cmd.none
       )
 
     InsertedTiles maybeGrid ->
@@ -291,7 +307,7 @@ subscriptions _ =
 
 
 view : Model -> H.Html Msg
-view { tally, scoreCardState, gridState } =
+view { status, tally, scoreCardState, gridState } =
   App.View.Main.view
     { header =
         { current = Tally.getCurrent tally
@@ -301,6 +317,24 @@ view { tally, scoreCardState, gridState } =
             , onChange = ChangedScoreCard
             }
         }
+    , message =
+        case status of
+          Playing ->
+            Grid.NoMessage
+
+          Won ->
+            Grid.WinMessage
+              { onTryAgain = ClickedNewGame
+              , onKeepPlaying = ClickedKeepPlaying
+              }
+
+          Loss ->
+            Grid.GameOverMessage
+              { onTryAgain = ClickedNewGame
+              }
+
+          KeepPlaying ->
+            Grid.NoMessage
     , gridState = gridState
     , onMove = Moved
     , onNewGame = ClickedNewGame

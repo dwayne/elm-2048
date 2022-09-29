@@ -2,6 +2,7 @@ module App.View.Grid exposing
   ( State, init
   , Msg, update
   , subscriptions
+  , Message(..)
   , view
   )
 
@@ -10,6 +11,7 @@ import Animation exposing (Animation)
 import App.Data.Grid as Grid exposing (Grid)
 import App.Data.Tile as Tile exposing (Tile)
 import App.Data.Tile.Value as Value exposing (Value)
+import App.View.Message as Message
 import Browser.Events as BE
 import Html as H
 import Html.Attributes as HA
@@ -74,8 +76,14 @@ subscriptions =
   BE.onAnimationFrameDelta Tick
 
 
-view : State -> H.Html msg
-view (State { animatedTiles, clock }) =
+type Message msg
+  = NoMessage
+  | GameOverMessage (Message.GameOverOptions msg)
+  | WinMessage (Message.WinOptions msg)
+
+
+view : Message msg -> State -> H.Html msg
+view message (State { animatedTiles, clock }) =
   H.div [ HA.class "grid" ]
     [ H.div [ HA.class "grid__background" ]
         [ H.div [ HA.class "grid__cells" ]
@@ -97,6 +105,17 @@ view (State { animatedTiles, clock }) =
             , H.div [ HA.class "grid__cell" ] []
             ]
         , viewGridTiles clock animatedTiles
+        , case message of
+            NoMessage ->
+              H.text ""
+
+            GameOverMessage options ->
+              H.div [ HA.class "grid__message" ]
+                [ Message.viewGameOver options ]
+
+            WinMessage options ->
+              H.div [ HA.class "grid__message" ]
+                [ Message.viewWin options ]
         ]
     ]
 

@@ -12,28 +12,54 @@
       }
 
       :root {
-        --width: 100px;
-        --height: 100px;
-        --gap: 10px;
+        --grid-gap: 10px;
+        --tile-size: 100px;
       }
 
-      .row {
-        width: calc(5 * var(--gap) + 4 * var(--width));
-        height: calc(2 * var(--gap) + var(--height));
+      .grid {
+        position: relative;
+
+        width: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
+        height: calc(2 * var(--grid-gap) + var(--tile-size));
         background-color: grey;
       }
 
-      .tile, .tile__inner {
-        width: var(--width);
-        height: var(--height);
+      .grid__tile {
+        position: absolute;
       }
 
-      .tile__inner {
+      .grid__tile--1-1 {
+        transform: translate(var(--grid-gap), var(--grid-gap));
+      }
+
+      .grid__tile--1-3 {
+        transform: translate(
+          calc(3 * var(--grid-gap) + 2 * var(--tile-size)),
+          var(--grid-gap)
+        );
+      }
+
+      .tile {
+        width: var(--tile-size);
+        height: var(--tile-size);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 48px;
+        font-weight: bold;
+        color: white;
         background-color: green;
       }
 
-      .tile-1-1 {
-        transform: translate(var(--gap), var(--gap));
+      .tile--new {
+        /* Normal */
+        animation: appear 200ms 100ms ease;
+        /* Slow */
+        /* animation: appear 4000ms 2000ms ease; */
+
+        animation-fill-mode: backwards;
       }
 
       @keyframes appear {
@@ -46,17 +72,19 @@
           transform: scale(1);
         }
       }
-
-      .tile--new .tile__inner {
-        animation: appear 200ms ease 100ms;
-        animation-fill-mode: backwards;
-      }
     </style>
   </head>
   <body>
-    <div class="row">
-      <div class="tile tile-1-1 tile--new">
-        <div class="tile__inner"></div>
+    <div class="grid">
+      <div class="grid__tile grid__tile--1-1">
+        <div class="tile tile--new">
+          <div class="tile__value">2</div>
+        </div>
+      </div>
+      <div class="grid__tile grid__tile--1-3">
+        <div class="tile tile--new">
+          <div class="tile__value">4</div>
+        </div>
       </div>
     </div>
   </body>

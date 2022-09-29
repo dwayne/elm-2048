@@ -12,53 +12,68 @@
       }
 
       :root {
-        --width: 100px;
-        --height: 100px;
-        --gap: 10px;
+        --grid-gap: 10px;
+        --tile-size: 100px;
       }
 
       .grid {
-        width: calc(5 * var(--gap) + 4 * var(--width));
-        height: calc(5 * var(--gap) + 4 * var(--height));
+        position: relative;
+
+        width: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
+        height: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
         background-color: grey;
       }
 
-      .tile, .tile__inner {
-        width: var(--width);
-        height: var(--height);
+      .grid__tile {
+        position: absolute;
+        /* Normal */
+        transition: transform 100ms ease-in-out;
+        /* Slow */
+        /* transition: transform 5000ms ease-in-out; */
+      }
+
+      .grid__tile--1-1 {
+        transform: translate(var(--grid-gap), var(--grid-gap));
+      }
+
+      .grid__tile--1-4 {
+        transform: translate(
+          calc(4 * var(--grid-gap) + 3 * var(--tile-size)),
+          var(--grid-gap)
+        );
+      }
+
+      .grid__tile--4-1 {
+        transform: translate(
+          var(--grid-gap),
+          calc(4 * var(--grid-gap) + 3 * var(--tile-size))
+        );
+      }
+
+      .grid__tile--4-4 {
+        transform: translate(
+          calc(4 * var(--grid-gap) + 3 * var(--tile-size)),
+          calc(4 * var(--grid-gap) + 3 * var(--tile-size))
+        );
       }
 
       .tile {
-        transition: transform 100ms ease-in-out;
-      }
+        width: var(--tile-size);
+        height: var(--tile-size);
 
-      .tile__inner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 48px;
+        font-weight: bold;
+        color: white;
         background-color: green;
       }
 
-      .tile-1-1 {
-        transform: translate(var(--gap), var(--gap));
-      }
-
-      .tile-1-4 {
-        transform: translate(
-          calc(4 * var(--gap) + 3 * var(--width)),
-          var(--gap)
-        );
-      }
-
-      .tile-4-1 {
-        transform: translate(
-          var(--gap),
-          calc(4 * var(--gap) + 3 * var(--height))
-        );
-      }
-
-      .tile-4-4 {
-        transform: translate(
-          calc(4 * var(--gap) + 3 * var(--width)),
-          calc(4 * var(--gap) + 3 * var(--height))
-        );
+      .tile--new {
+        animation: appear 200ms 100ms ease;
+        animation-fill-mode: backwards;
       }
 
       @keyframes appear {
@@ -71,63 +86,61 @@
           transform: scale(1);
         }
       }
-
-      .tile--new .tile__inner {
-        animation: appear 200ms ease 100ms;
-        animation-fill-mode: backwards;
-      }
     </style>
   </head>
   <body>
     <div class="grid">
-      <div class="tile tile-1-1 tile--new">
-        <div class="tile__inner"></div>
+      <div class="grid__tile grid__tile--1-1">
+        <div class="tile tile--new">
+          <div class="tile__value">2</div>
+        </div>
       </div>
     </div>
 
     <p>
-      <button id="move-up">Move Up</button>
       <button id="move-right">Move Right</button>
-      <button id="move-down">Move Down</button>
       <button id="move-left">Move Left</button>
+      <button id="move-down">Move Down</button>
+      <button id="move-up">Move Up</button>
     </p>
 
     <script>
-      const tile = document.querySelector('.tile');
-      const moveUp = document.getElementById('move-up');
-      const moveRight = document.getElementById('move-right');
-      const moveDown = document.getElementById('move-down');
-      const moveLeft = document.getElementById('move-left');
+      const gridTile = document.querySelector('.grid__tile');
 
-      moveUp.addEventListener('click', () => {
-        if (tile.classList.contains('tile-4-1')) {
-          tile.classList.replace('tile-4-1', 'tile-1-1');
-        } else if (tile.classList.contains('tile-4-4')) {
-          tile.classList.replace('tile-4-4', 'tile-1-4');
-        }
-      });
+      const moveRight = document.getElementById('move-right');
+      const moveLeft = document.getElementById('move-left');
+      const moveDown = document.getElementById('move-down');
+      const moveUp = document.getElementById('move-up');
 
       moveRight.addEventListener('click', () => {
-        if (tile.classList.contains('tile-1-1')) {
-          tile.classList.replace('tile-1-1', 'tile-1-4');
-        } else if (tile.classList.contains('tile-4-1')) {
-          tile.classList.replace('tile-4-1', 'tile-4-4');
-        }
-      });
-
-      moveDown.addEventListener('click', () => {
-        if (tile.classList.contains('tile-1-1')) {
-          tile.classList.replace('tile-1-1', 'tile-4-1');
-        } else if (tile.classList.contains('tile-1-4')) {
-          tile.classList.replace('tile-1-4', 'tile-4-4');
+        if (gridTile.classList.contains('grid__tile--1-1')) {
+          gridTile.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
+        } else if (gridTile.classList.contains('grid__tile--4-1')) {
+          gridTile.classList.replace('grid__tile--4-1', 'grid__tile--4-4');
         }
       });
 
       moveLeft.addEventListener('click', () => {
-        if (tile.classList.contains('tile-1-4')) {
-          tile.classList.replace('tile-1-4', 'tile-1-1');
-        } else if (tile.classList.contains('tile-4-4')) {
-          tile.classList.replace('tile-4-4', 'tile-4-1');
+        if (gridTile.classList.contains('grid__tile--1-4')) {
+          gridTile.classList.replace('grid__tile--1-4', 'grid__tile--1-1');
+        } else if (gridTile.classList.contains('grid__tile--4-4')) {
+          gridTile.classList.replace('grid__tile--4-4', 'grid__tile--4-1');
+        }
+      });
+
+      moveDown.addEventListener('click', () => {
+        if (gridTile.classList.contains('grid__tile--1-1')) {
+          gridTile.classList.replace('grid__tile--1-1', 'grid__tile--4-1');
+        } else if (gridTile.classList.contains('grid__tile--1-4')) {
+          gridTile.classList.replace('grid__tile--1-4', 'grid__tile--4-4');
+        }
+      });
+
+      moveUp.addEventListener('click', () => {
+        if (gridTile.classList.contains('grid__tile--4-1')) {
+          gridTile.classList.replace('grid__tile--4-1', 'grid__tile--1-1');
+        } else if (gridTile.classList.contains('grid__tile--4-4')) {
+          gridTile.classList.replace('grid__tile--4-4', 'grid__tile--1-4');
         }
       });
     </script>

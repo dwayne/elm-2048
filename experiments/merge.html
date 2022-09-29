@@ -12,48 +12,104 @@
       }
 
       :root {
-        --width: 100px;
-        --height: 100px;
-        --gap: 20px;
-        --duration: 2000ms;
+        --grid-gap: 20px;
+        --tile-size: 100px;
+
+        /* Normal */
+        --grid-tile-move-duration: 100ms;
+        --tile-pop-duration: 200ms;
+
+        /* Slow */
+        /* --grid-tile-move-duration: 2000ms;
+        --tile-pop-duration: 4000ms; */
+
+        --tile-appear-duration: 200ms;
+        --tile-appear-delay: 100ms;
+        --tile-pop-delay: var(--grid-tile-move-duration);
+        --tile-disappear-duration: 0s;
+        --tile-disappear-delay: calc(var(--grid-tile-move-duration) + var(--tile-pop-duration));
       }
 
-      .row {
-        width: calc(5 * var(--gap) + 4 * var(--width));
-        height: calc(2 * var(--gap) + var(--height));
+      .grid {
+        position: relative;
+
+        width: calc(5 * var(--grid-gap) + 4 * var(--tile-size));
+        height: calc(2 * var(--grid-gap) + var(--tile-size));
         background-color: grey;
       }
 
-      .tile, .tile__inner {
-        width: var(--width);
-        height: var(--height);
+      .grid__tile {
+        will-change: transform;
+        -webkit-transform: translateZ(0);
+        -moz-transform: translateZ(0);
+        -ms-transform: translateZ(0);
+        -o-transform: translateZ(0);
+        transform: translateZ(0);
+
+        position: absolute;
+        transition: transform var(--grid-tile-move-duration) ease-in-out;
+      }
+
+      .grid__tile--1-1 {
+        transform: translate(var(--grid-gap), var(--grid-gap));
+      }
+
+      .grid__tile--1-3 {
+        transform: translate(
+          calc(3 * var(--grid-gap) + 2 * var(--tile-size)),
+          var(--grid-gap)
+        );
+      }
+
+      .grid__tile--1-4 {
+        transform: translate(
+          calc(4 * var(--grid-gap) + 3 * var(--tile-size)),
+          var(--grid-gap)
+        );
       }
 
       .tile {
-        position: absolute;
-        transition: transform var(--duration) ease-in-out;
-      }
+        will-change: opacity, transform;
+        -webkit-transform: translateZ(0);
+        -moz-transform: translateZ(0);
+        -ms-transform: translateZ(0);
+        -o-transform: translateZ(0);
+        transform: translateZ(0);
 
-      .tile__inner {
+        width: var(--tile-size);
+        height: var(--tile-size);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 48px;
+        font-weight: bold;
+        color: white;
         background-color: green;
       }
 
-      .tile-1-1 {
-        transform: translate(var(--gap), var(--gap));
+      .tile--2 {
+        background-color: orange;
       }
 
-      .tile-1-3 {
-        transform: translate(
-          calc(3 * var(--gap) + 2 * var(--width)),
-          var(--gap)
-        );
+      .tile--4 {
+        background-color: blue;
       }
 
-      .tile-1-4 {
-        transform: translate(
-          calc(4 * var(--gap) + 3 * var(--width)),
-          var(--gap)
-        );
+      .tile--new {
+        animation: appear var(--tile-appear-duration) var(--tile-appear-delay) ease;
+        animation-fill-mode: backwards;
+      }
+
+      .tile--merged {
+        animation: disappear var(--tile-disappear-duration) var(--tile-disappear-delay) linear;
+        animation-fill-mode: both;
+      }
+
+      .tile--composite {
+        animation: pop var(--tile-pop-duration) var(--tile-pop-delay) ease;
+        animation-fill-mode: backwards;
       }
 
       @keyframes appear {
@@ -64,6 +120,17 @@
         to {
           opacity: 1;
           transform: scale(1);
+        }
+      }
+
+      @keyframes disappear {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(0);
         }
       }
 
@@ -78,59 +145,48 @@
           transform: scale(1);
         }
       }
-
-      .tile--2 .tile__inner {
-        background-color: orange;
-      }
-
-      .tile--4 .tile__inner {
-        background-color: cyan;
-      }
-
-      .tile--new .tile__inner {
-        animation: appear 200ms ease 100ms;
-        animation-fill-mode: backwards;
-      }
-
-      .tile--merged .tile__inner {
-        animation: pop calc(2 * var(--duration)) var(--duration) ease;
-        animation-fill-mode: backwards;
-      }
     </style>
   </head>
   <body>
-    <div class="row">
-      <div class="tile tile-1-1 tile--2 tile--new">
-        <div class="tile__inner"></div>
+    <div class="grid">
+      <div class="grid__tile grid__tile--1-1">
+        <div class="tile tile--2 tile--new">
+          <div class="tile__value">2</div>
+        </div>
       </div>
-      <div class="tile tile-1-3 tile--2 tile--new">
-        <div class="tile__inner"></div>
+      <div class="grid__tile grid__tile--1-3">
+        <div class="tile tile--2 tile--new">
+          <div class="tile__value">2</div>
+        </div>
       </div>
     </div>
+
+    <template id="composite-tile-template">
+      <div class="grid__tile grid__tile--1-4">
+        <div class="tile tile--4 tile--composite">
+          <div class="tile__value">4</div>
+        </div>
+      </div>
+    </template>
 
     <p>
       <button id="merge">Merge</button>
     </p>
 
     <script>
-      const row = document.querySelector('.row');
-      const tileA = document.querySelector('.tile-1-1');
-      const tileB = document.querySelector('.tile-1-3');
+      const grid = document.querySelector('.grid');
+      const gridTileA = document.querySelector('.grid__tile--1-1');
+      const gridTileB = document.querySelector('.grid__tile--1-3');
+      const template = document.getElementById('composite-tile-template');
       const merge = document.getElementById('merge');
 
       merge.addEventListener('click', () => {
-        tileA.classList.replace('tile-1-1', 'tile-1-4');
-        tileA.classList.replace('tile--new', 'tile--used');
-        tileB.classList.replace('tile-1-3', 'tile-1-4');
-        tileB.classList.replace('tile--new', 'tile--used');
+        gridTileA.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
+        gridTileA.classList.replace('tile--new', 'tile--merged');
+        gridTileB.classList.replace('grid__tile--1-3', 'grid__tile--1-4');
+        gridTileB.classList.replace('tile--new', 'tile--merged');
 
-        const tile = document.createElement('div');
-        tile.setAttribute('class', 'tile tile-1-4 tile--4 tile--merged');
-        const tileInner = document.createElement('div');
-        tileInner.setAttribute('class', 'tile__inner');
-
-        tile.appendChild(tileInner);
-        row.appendChild(tile);
+        grid.appendChild(template.content);
       });
     </script>
   </body>

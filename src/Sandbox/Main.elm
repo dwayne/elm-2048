@@ -81,7 +81,7 @@ update msg model =
     GotPoints1 points ->
       ( { model
         | points = Points.add points model.points
-        , scoreState = Score.addDelta points model.scoreState
+        , scoreState = Score.addPoints points model.scoreState
         }
       , Cmd.none
       )
@@ -104,7 +104,7 @@ update msg model =
     GotPoints2 points ->
       ( { model
         | tally = Tally.addPoints points model.tally
-        , scoreCardState = ScoreCard.addDelta points model.scoreCardState
+        , scoreCardState = ScoreCard.addPoints points model.scoreCardState
         }
       , Cmd.none
       )
@@ -241,7 +241,7 @@ viewGrid : H.Html msg
 viewGrid =
   H.div []
     [ H.h2 [] [ H.text "Grid" ]
-    , Grid.view <| Grid.init Grid.empty
+    , Grid.view Grid.NoMessage <| Grid.init Grid.empty
     ]
 
 

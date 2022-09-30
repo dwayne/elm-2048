@@ -1,9 +1,7 @@
 module App.View.ScoreCard exposing
   ( State, init
-  , addDelta
-
+  , addPoints
   , Msg, update
-
   , Options, view
   )
 
@@ -23,9 +21,9 @@ init =
   State Score.init
 
 
-addDelta : Points -> State -> State
-addDelta points (State state) =
-  State <| Score.addDelta points state
+addPoints : Points -> State -> State
+addPoints points (State state) =
+  State <| Score.addPoints points state
 
 
 type Msg

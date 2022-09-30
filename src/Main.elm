@@ -150,7 +150,7 @@ updatePlaying msg model =
               else
                 { model1
                 | tally = Tally.addPoints points model1.tally
-                , scoreCardState = ScoreCard.addDelta points model1.scoreCardState
+                , scoreCardState = ScoreCard.addPoints points model1.scoreCardState
                 }
           in
           ( model2
@@ -275,7 +275,7 @@ updateKeepPlaying msg model =
               else
                 { model1
                 | tally = Tally.addPoints points model1.tally
-                , scoreCardState = ScoreCard.addDelta points model1.scoreCardState
+                , scoreCardState = ScoreCard.addPoints points model1.scoreCardState
                 }
           in
           ( model2

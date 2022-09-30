@@ -1,9 +1,7 @@
 module App.View.Score exposing
   ( State, init
-  , addDelta
-
+  , addPoints
   , Msg, update
-
   , view, viewReadOnly
   )
 
@@ -31,8 +29,8 @@ init =
     }
 
 
-addDelta : Points -> State -> State
-addDelta points (State state) =
+addPoints : Points -> State -> State
+addPoints points (State state) =
   State
     { state
     | currentId = state.currentId + 1
@@ -53,13 +51,16 @@ update msg (State state) =
 
 view : String -> Points -> State -> H.Html Msg
 view title points (State { deltas }) =
-  H.div [ HA.class "score" ]
+  let
+    (pointsAsString, scoreNDigit) =
+      pointsToDetails points
+  in
+  H.div [ HA.class "score", scoreNDigit ]
     [ H.h2 [ HA.class "score__title" ] [ H.text title ]
     , let
         scoreValue =
           ( "score__value"
-          , H.div [ HA.class "score__value" ]
-              [ H.text <| Points.toString points ]
+          , H.div [ HA.class "score__value" ] [ H.text pointsAsString ]
           )
 
         scoreDeltas =
@@ -88,10 +89,30 @@ onAnimationEnd msg =
 
 viewReadOnly : String -> Points -> H.Html msg
 viewReadOnly title points =
-  H.div [ HA.class "score" ]
+  let
+    (pointsAsString, scoreNDigit) =
+      pointsToDetails points
+  in
+  H.div [ HA.class "score", scoreNDigit ]
     [ H.h2 [ HA.class "score__title" ] [ H.text title ]
     , H.div [ HA.class "score__total" ]
-        [ H.div [ HA.class "score__value" ]
-            [ H.text <| Points.toString points ]
-        ]
+        [ H.div [ HA.class "score__value" ] [ H.text pointsAsString ] ]
     ]
+
+
+pointsToDetails : Points -> (String, H.Attribute msg)
+pointsToDetails points =
+  let
+    pointsAsString =
+      Points.toString points
+
+    digits =
+      String.length pointsAsString
+  in
+  ( pointsAsString
+  , HA.classList
+      [ ( "score--" ++ String.fromInt digits ++ "-digit"
+        , digits > 3
+        )
+      ]
+  )

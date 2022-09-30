@@ -1,14 +1,17 @@
 @use "sass:color";
 @use "colors";
 
+$zeroWidth: 15.65px;
+
 .score {
+  display: inline-block;
+
+  box-sizing: content-box;
+  padding: 8px 10px;
+  min-width: 3 * $zeroWidth;
   line-height: 1;
 
-  display: inline-block;
-  min-width: 80px;
-
   border-radius: 3px;
-  padding: 8px 10px;
 
   text-align: center;
   font-weight: bold;
@@ -16,17 +19,26 @@
   background-color: colors.$silk;
 }
 
+@for $digits from 4 through 10 {
+  .score--#{$digits}-digit {
+    min-width: $digits * $zeroWidth;
+  }
+}
+
 .score__title {
   margin: 0;
   margin-bottom: 2px;
+
   font-size: 13px;
   text-transform: uppercase;
+
   color: colors.$springWood;
 }
 
 .score__total {
-  font-size: 25px;
   position: relative;
+
+  font-size: 25px;
 }
 
 .score__value {
@@ -34,12 +46,12 @@
 }
 
 .score__delta {
-  color: color.change(colors.$sandstone, $alpha: 0.9);
-
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
+
+  color: color.change(colors.$sandstone, $alpha: 0.9);
 
   animation: move-up 600ms ease-in;
   animation-fill-mode: forwards;

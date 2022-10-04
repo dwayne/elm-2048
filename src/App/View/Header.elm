@@ -21,8 +21,8 @@ type alias Options msg =
 view : Options msg -> H.Html msg
 view { current, best, scoreCard } =
   H.header [ HA.class "header" ]
-    [ H.div [ HA.class "header__item" ] [ Title.view ]
-    , H.div [ HA.class "header__item" ]
+    [ H.div [ HA.class "header__title" ] [ Title.view ]
+    , H.div [ HA.class "header__score-card" ]
         [ ScoreCard.view
             { current = current
             , best = best

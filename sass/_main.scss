@@ -1,6 +1,11 @@
+@use "responsive";
+
 .main {
-  outline: 0;
   padding: 80px 0;
+}
+
+.main:focus-visible {
+  outline: 0;
 }
 
 .main__body {
@@ -22,7 +27,7 @@
   margin-bottom: 50px;
 }
 
-@media screen and (min-width: 520px) {
+@include responsive.forLargeScreens {
   .main__body {
     width: 500px;
     padding: 0 10px;

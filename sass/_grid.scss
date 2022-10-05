@@ -31,6 +31,14 @@
   position: absolute;
   top: 0;
   left: 0;
+
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+
   transition: transform var(--grid-tile-move-duration) ease-in-out;
 }
 

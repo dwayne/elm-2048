@@ -26,3 +26,7 @@
 .button:active {
   transform: scale(0.95);
 }
+
+.button:focus-visible {
+  outline: 0;
+}

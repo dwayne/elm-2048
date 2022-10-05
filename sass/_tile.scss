@@ -16,6 +16,13 @@
   font-size: var(--tile-font-size1);
   font-weight: bold;
   background-color: colors.$tile;
+
+  will-change: opacity, transform;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 @mixin tiles($useOriginalBackgroundColors: true) {

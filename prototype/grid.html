@@ -300,11 +300,11 @@
       </div>
 
       <p>
-        <button id="lose">Lose</button>
+        <button id="game-over">Game Over</button>
         <button id="win">Win</button>
       </p>
 
-      <template id="lose-template">
+      <template id="game-over-template">
         <div class="grid__message">
           <div class="message">
             <h2 class="message__title">Game over!</h2>
@@ -335,11 +335,11 @@
     </div>
     <script>
       const jsMessage = document.getElementById('js-message');
-      const loseTemplate = document.getElementById('lose-template');
+      const gameOverTemplate = document.getElementById('game-over-template');
       const winTemplate = document.getElementById('win-template');
       const gridBackground = jsMessage.querySelector('.grid__background');
 
-      const loseButton = document.getElementById('lose');
+      const gameOverButton = document.getElementById('game-over');
       const winButton = document.getElementById('win');
 
       const clear = () => {
@@ -347,9 +347,9 @@
         if (gridMessage) { gridBackground.removeChild(gridMessage); }
       };
 
-      loseButton.addEventListener('click', () => {
+      gameOverButton.addEventListener('click', () => {
         clear();
-        gridBackground.appendChild(loseTemplate.cloneNode(true).content);
+        gridBackground.appendChild(gameOverTemplate.cloneNode(true).content);
       });
 
       winButton.addEventListener('click', () => {

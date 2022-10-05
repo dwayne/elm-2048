@@ -1,5 +1,6 @@
 @use "sass:color";
 @use "colors";
+@use "responsive";
 
 .message {
   width: 100%;
@@ -41,7 +42,7 @@
   color: colors.$floralWhite1;
 }
 
-@media screen and (min-width: 520px) {
+@include responsive.forLargeScreens {
   .message__title {
     font-size: 60px;
     margin-bottom: 60px;

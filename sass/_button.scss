@@ -11,10 +11,12 @@
   font-weight: bold;
   white-space: nowrap;
 
+  cursor: pointer;
+
   background-color: colors.$squirrel;
   color: colors.$floralWhite1;
 
-  cursor: pointer;
+  will-change: transform;
 }
 
 .button:hover {

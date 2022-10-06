@@ -29,9 +29,11 @@
 
 .grid__tile {
   position: absolute;
-  top: 0;
   left: 0;
+  top: 0;
+}
 
+.grid__tile--translate {
   will-change: transform;
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);

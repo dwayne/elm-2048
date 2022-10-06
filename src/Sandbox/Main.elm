@@ -4,6 +4,7 @@ module Sandbox.Main exposing (main)
 import App.Data.Grid as Grid
 import App.Data.Points as Points exposing (Points)
 import App.Data.Tally as Tally exposing (Tally)
+import App.Data.Tile as Tile
 import App.Data.Tile.Value as Value
 import App.View.Footer as Footer
 import App.View.Grid as Grid
@@ -164,9 +165,9 @@ view model =
     -- , viewScoreCard model.tally model.scoreCardState
     , viewHeader model.tally model.scoreCardState
     , viewIntroduction
-    , viewGameOverMessage
-    , viewWinMessage
-    -- , viewGrid
+    -- , viewGameOverMessage
+    -- , viewWinMessage
+    , viewGrid
     -- , viewFooter
     ]
 
@@ -289,11 +290,36 @@ viewMessage message =
     ]
 
 
-viewGrid : H.Html msg
+viewGrid : H.Html Msg
 viewGrid =
+  let
+    moveDuration = 0
+  in
   H.div []
     [ H.h2 [] [ H.text "Grid" ]
-    , Grid.view Grid.NoMessage <| Grid.init Grid.empty
+    , H.h3 [] [ H.text "Example 1" ]
+    , Grid.view Grid.NoMessage <|
+        Grid.init
+          { tiles =
+              [ Tile.new 1 Value.two { row = 1, col = 2 }
+              , Tile.new 2 Value.four { row = 4, col = 3 }
+              ]
+          , moveDuration = moveDuration
+          }
+    , H.h3 [] [ H.text "Example 2" ]
+    , Grid.view
+        (Grid.GameOverMessage { onTryAgain = NoOp })
+        (Grid.init
+          { tiles = []
+          , moveDuration = moveDuration
+          })
+    , H.h3 [] [ H.text "Example 3" ]
+    , Grid.view
+        (Grid.WinMessage { onKeepPlaying = NoOp, onTryAgain = NoOp })
+        (Grid.init
+          { tiles = []
+          , moveDuration = moveDuration
+          })
     ]
 
 

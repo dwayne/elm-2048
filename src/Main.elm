@@ -51,7 +51,7 @@ init _ =
     , tally = Tally.zero
     , scoreCardState = ScoreCard.init
     , grid = grid
-    , gridState = Grid.init grid
+    , gridState = Grid.fromGrid grid
     }
   , insertAtMost2Tiles grid
   )
@@ -103,7 +103,7 @@ updatePlaying msg model =
       ( { model
         | tally = Tally.resetCurrent model.tally
         , grid = grid
-        , gridState = Grid.init grid
+        , gridState = Grid.fromGrid grid
         }
       , insertAtMost2Tiles grid
       )
@@ -117,15 +117,15 @@ updatePlaying msg model =
       case maybeGrid of
         Just grid ->
           if Grid.has2048 grid then
-            ( { model | status = Won, grid = grid, gridState = Grid.init grid }
+            ( { model | status = Won, grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
           else if Grid.hasMoves grid then
-            ( { model | grid = grid, gridState = Grid.init grid }
+            ( { model | grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
           else
-            ( { model | status = Loss, grid = grid, gridState = Grid.init grid }
+            ( { model | status = Loss, grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
 
@@ -142,7 +142,7 @@ updatePlaying msg model =
               Grid.toPoints grid
 
             model1 =
-              { model | grid = grid, gridState = Grid.init grid }
+              { model | grid = grid, gridState = Grid.fromGrid grid }
 
             model2 =
               if Points.isZero points then
@@ -187,7 +187,7 @@ updateGameOver msg model =
         | status = Playing
         , tally = Tally.resetCurrent model.tally
         , grid = grid
-        , gridState = Grid.init grid
+        , gridState = Grid.fromGrid grid
         }
       , insertAtMost2Tiles grid
       )
@@ -232,7 +232,7 @@ updateKeepPlaying msg model =
         | status = Playing
         , tally = Tally.resetCurrent model.tally
         , grid = grid
-        , gridState = Grid.init grid
+        , gridState = Grid.fromGrid grid
         }
       , insertAtMost2Tiles grid
       )
@@ -246,11 +246,11 @@ updateKeepPlaying msg model =
       case maybeGrid of
         Just grid ->
           if Grid.hasMoves grid then
-            ( { model | grid = grid, gridState = Grid.init grid }
+            ( { model | grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
           else
-            ( { model | status = Loss, grid = grid, gridState = Grid.init grid }
+            ( { model | status = Loss, grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
 
@@ -267,7 +267,7 @@ updateKeepPlaying msg model =
               Grid.toPoints grid
 
             model1 =
-              { model | grid = grid, gridState = Grid.init grid }
+              { model | grid = grid, gridState = Grid.fromGrid grid }
 
             model2 =
               if Points.isZero points then

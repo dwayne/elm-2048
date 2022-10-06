@@ -1,9 +1,8 @@
 module App.View.Grid exposing
-  ( State, init
+  ( State, fromGrid, InitOptions, init
   , Msg, update
   , subscriptions
-  , Message(..)
-  , view
+  , Message(..), view
   )
 
 
@@ -19,9 +18,13 @@ import Html.Keyed as HK
 import App.Lib.Ease as Ease
 
 
+-- STATE
+
+
 type State =
   State
     { clock : Animation.Clock
+    , moveDuration : Float
     , animatedTiles : List AnimatedTile
     }
 
@@ -32,32 +35,40 @@ type alias AnimatedTile =
   }
 
 
-init : Grid -> State
-init grid =
-  State
-    { clock = 0
-    , animatedTiles =
-        grid
-          |> Grid.toTiles
-          |> List.map toAnimatedTile
+fromGrid : Grid -> State
+fromGrid grid =
+  init
+    { tiles = Grid.toTiles grid
+    , moveDuration = 100
     }
 
 
-toAnimatedTile : Tile -> AnimatedTile
-toAnimatedTile tile =
+type alias InitOptions =
+  { tiles : List Tile
+  , moveDuration : Float
+  }
+
+
+init : InitOptions -> State
+init { tiles, moveDuration } =
+  State
+    { clock = 0
+    , moveDuration = moveDuration
+    , animatedTiles = List.map (toAnimatedTile moveDuration) tiles
+    }
+
+
+toAnimatedTile : Float -> Tile -> AnimatedTile
+toAnimatedTile moveDuration tile =
   { factor =
       Animation.animation 0
-        |> Animation.duration gridTileMoveDuration
+        |> Animation.duration moveDuration
         |> Animation.ease Ease.inOut
   , tile = tile
   }
 
 
-gridTileMoveDuration : Float
-gridTileMoveDuration =
-  -- NOTE: See sass/_config.scss for the value of --grid-tile-move-duration.
-  -- They MUST match.
-  100
+-- UPDATE
 
 
 type Msg
@@ -71,9 +82,15 @@ update msg (State state) =
       State { state | clock = state.clock + dt }
 
 
+-- SUBSCRIPTIONS
+
+
 subscriptions : Sub Msg
 subscriptions =
   BE.onAnimationFrameDelta Tick
+
+
+-- VIEW
 
 
 type Message msg
@@ -83,9 +100,14 @@ type Message msg
 
 
 view : Message msg -> State -> H.Html msg
-view message (State { animatedTiles, clock }) =
-  H.div [ HA.class "grid" ]
-    [ H.div [ HA.class "grid__background" ]
+view message (State { clock, moveDuration, animatedTiles }) =
+  H.div
+    [ HA.class "grid"
+    ]
+    [ H.node "style" []
+        [ H.text <| ":root { --grid-tile-move-duration: " ++ String.fromFloat moveDuration ++ "ms;" ++ " }"
+        ]
+    , H.div [ HA.class "grid__background" ]
         [ H.div [ HA.class "grid__cells" ]
             [ H.div [ HA.class "grid__cell" ] []
             , H.div [ HA.class "grid__cell" ] []

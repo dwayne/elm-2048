@@ -145,7 +145,7 @@
     <h2>Move</h2>
 
     <style>
-      #js-move {
+      :root {
         --grid-tile-move-duration: 2000ms;
       }
     </style>
@@ -171,7 +171,7 @@
             <div class="grid__cell"></div>
           </div>
           <div class="grid__tiles">
-            <div class="grid__tile grid__tile--1-1">
+            <div class="grid__tile grid__tile--1-1 grid__tile--translate">
               <div class="tile tile--2 tile--new">
                 <div class="tile__value">2</div>
               </div>
@@ -186,7 +186,7 @@
 
       window.setTimeout(() => {
         tile.classList.replace('grid__tile--1-1', 'grid__tile--1-4');
-      }, 1000);
+      }, 2000 + 1000);
     </script>
 
     <h2>Merge</h2>
@@ -213,12 +213,12 @@
             <div class="grid__cell"></div>
           </div>
           <div class="grid__tiles">
-            <div class="grid__tile grid__tile--1-1">
+            <div class="grid__tile grid__tile--1-1 grid__tile--translate">
               <div class="tile tile--2048 tile--new">
                 <div class="tile__value">2048</div>
               </div>
             </div>
-            <div class="grid__tile grid__tile--1-2">
+            <div class="grid__tile grid__tile--1-2 grid__tile--translate">
               <div class="tile tile--2048 tile--new">
                 <div class="tile__value">2048</div>
               </div>

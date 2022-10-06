@@ -151,10 +151,10 @@ view : Model -> H.Html Msg
 view model =
   H.div []
     [ H.h1 [] [ H.text "Sandbox" ]
-    , viewTitle
-    , viewScore model.points model.scoreState
-    , viewScoreCard model.tally model.scoreCardState
-    -- , viewHeader model.tally model.scoreCardState
+    -- , viewTitle
+    -- , viewScore model.points model.scoreState
+    -- , viewScoreCard model.tally model.scoreCardState
+    , viewHeader model.tally model.scoreCardState
     -- , viewIntroduction
     -- , viewGrid
     -- , viewFooter
@@ -214,18 +214,16 @@ viewHeader tally state =
         [ Header.view
             { current = Tally.getCurrent tally
             , best = Tally.getBest tally
-            , scoreCard =
-                { state = state
-                , onChange = ChangedScoreCard
-                }
+            , state = state
+            , onChange = ChangedScoreCard
             }
         ]
     , H.p []
-        -- [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
-        -- , H.text " "
-        -- , H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ]
-        -- ]
-        [ H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ] ]
+        [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
+        , H.text " "
+        , H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ]
+        ]
+        -- [ H.button [ HE.onClick ClickedAddPoints2 ] [ H.text "Add points" ] ]
     ]
 
 

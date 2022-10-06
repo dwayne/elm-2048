@@ -312,10 +312,8 @@ view { status, tally, scoreCardState, gridState } =
     { header =
         { current = Tally.getCurrent tally
         , best = Tally.getBest tally
-        , scoreCard =
-            { state = scoreCardState
-            , onChange = ChangedScoreCard
-            }
+        , state = scoreCardState
+        , onChange = ChangedScoreCard
         }
     , message =
         case status of

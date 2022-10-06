@@ -1,8 +1,7 @@
 module App.View.Score exposing
-  ( State, init
-  , addPoints
+  ( State, init, addPoints
   , Msg, update
-  , view, viewReadOnly
+  , viewCurrent, viewBest
   )
 
 
@@ -12,6 +11,9 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Html.Keyed as HK
 import Json.Decode as JD
+
+
+-- STATE
 
 
 type State
@@ -38,6 +40,9 @@ addPoints points (State state) =
     }
 
 
+-- UPDATE
+
+
 type Msg
   = AnimationEnded
 
@@ -46,7 +51,23 @@ update : Msg -> State -> State
 update msg (State state) =
   case msg of
     AnimationEnded ->
-      State { state | deltas = Maybe.withDefault [] <| List.tail state.deltas }
+      State
+        { state
+        | deltas = List.tail state.deltas |> Maybe.withDefault []
+        }
+
+
+-- VIEW
+
+
+viewCurrent : Points -> State -> H.Html Msg
+viewCurrent =
+  view "Score"
+
+
+viewBest : Points -> H.Html msg
+viewBest =
+  viewReadOnly "Best"
 
 
 view : String -> Points -> State -> H.Html Msg

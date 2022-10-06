@@ -1,6 +1,5 @@
 module App.View.ScoreCard exposing
-  ( State, init
-  , addPoints
+  ( State, init, addPoints
   , Msg, update
   , Options, view
   )
@@ -10,6 +9,9 @@ import App.Data.Points exposing (Points)
 import App.View.Score as Score
 import Html as H
 import Html.Attributes as HA
+
+
+-- STATE
 
 
 type State
@@ -26,15 +28,21 @@ addPoints points (State state) =
   State <| Score.addPoints points state
 
 
+-- UPDATE
+
+
 type Msg
-  = ChangedScore Score.Msg
+  = ChangedCurrentScore Score.Msg
 
 
 update : Msg -> State -> State
 update msg (State state) =
   case msg of
-    ChangedScore scoreMsg ->
+    ChangedCurrentScore scoreMsg ->
       State <| Score.update scoreMsg state
+
+
+-- VIEW
 
 
 type alias Options =
@@ -47,9 +55,8 @@ view : Options -> State -> H.Html Msg
 view { current, best } (State state) =
   H.div [ HA.class "score-card" ]
     [ H.div [ HA.class "score-card__score" ]
-        [ Score.view "Score" current state
-            |> H.map ChangedScore
+        [ Score.viewCurrent current state
+            |> H.map ChangedCurrentScore
         ]
-    , H.div [ HA.class "score-card__score" ]
-        [ Score.viewReadOnly "Best" best ]
+    , H.div [ HA.class "score-card__score" ] [ Score.viewBest best ]
     ]

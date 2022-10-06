@@ -58,7 +58,7 @@ type Msg
   -- Score
   = ClickedAddPoints1
   | GotPoints1 Points
-  | ChangedScore Score.Msg
+  | ChangedCurrentScore Score.Msg
 
   -- ScoreCard
   | ClickedReset
@@ -86,7 +86,7 @@ update msg model =
       , Cmd.none
       )
 
-    ChangedScore scoreMsg ->
+    ChangedCurrentScore scoreMsg ->
       ( { model | scoreState = Score.update scoreMsg model.scoreState }
       , Cmd.none
       )
@@ -151,13 +151,13 @@ view : Model -> H.Html Msg
 view model =
   H.div []
     [ H.h1 [] [ H.text "Sandbox" ]
-    -- , viewTitle
-    -- , viewScore model.points model.scoreState
-    -- , viewScoreCard model.tally model.scoreCardState
-    , viewHeader model.tally model.scoreCardState
-    , viewIntroduction
-    , viewGrid
-    , viewFooter
+    , viewTitle
+    , viewScore model.points model.scoreState
+    , viewScoreCard model.tally model.scoreCardState
+    -- , viewHeader model.tally model.scoreCardState
+    -- , viewIntroduction
+    -- , viewGrid
+    -- , viewFooter
     ]
 
 
@@ -174,10 +174,14 @@ viewScore points state =
   H.div []
     [ H.h2 [] [ H.text "Score" ]
     , H.div []
-        [ H.p [] [ Score.view "Score" points state |> H.map ChangedScore ]
+        [ H.p []
+            [ Score.viewCurrent points state
+                |> H.map ChangedCurrentScore
+            ]
         , H.button [ HE.onClick ClickedAddPoints1 ] [ H.text "Add points" ]
         ]
-    , H.p [] [ Score.viewReadOnly "Best" Points.zero ]
+    , H.p []
+        [ Score.viewBest Points.zero ]
     ]
 
 

@@ -155,7 +155,7 @@ view model =
     -- , viewScore model.points model.scoreState
     -- , viewScoreCard model.tally model.scoreCardState
     , viewHeader model.tally model.scoreCardState
-    -- , viewIntroduction
+    , viewIntroduction
     -- , viewGrid
     -- , viewFooter
     ]

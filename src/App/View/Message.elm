@@ -65,7 +65,7 @@ view { isSuccess, title, buttonOptions } =
         ]
     ]
     [ H.h2 [ HA.class "message__title" ] [ H.text title ]
-    , H.div [ HA.class "message__controls" ] <|
+    , H.div [ HA.class "message__buttons" ] <|
         List.map viewMessageButton buttonOptions
     ]
 

@@ -9,6 +9,7 @@ import App.View.Footer as Footer
 import App.View.Grid as Grid
 import App.View.Header as Header
 import App.View.Introduction as Introduction
+import App.View.Message as Message
 import App.View.Score as Score
 import App.View.ScoreCard as ScoreCard
 import App.View.Title as Title
@@ -55,8 +56,10 @@ init _ =
 
 
 type Msg
+  = NoOp
+
   -- Score
-  = ClickedAddPoints1
+  | ClickedAddPoints1
   | GotPoints1 Points
   | ChangedCurrentScore Score.Msg
 
@@ -73,6 +76,11 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
+    NoOp ->
+      ( model
+      , Cmd.none
+      )
+
     ClickedAddPoints1 ->
       ( model
       , Random.generate GotPoints1 pointsGenerator
@@ -156,6 +164,8 @@ view model =
     -- , viewScoreCard model.tally model.scoreCardState
     , viewHeader model.tally model.scoreCardState
     , viewIntroduction
+    , viewGameOverMessage
+    , viewWinMessage
     -- , viewGrid
     -- , viewFooter
     ]
@@ -236,6 +246,46 @@ viewIntroduction =
         , HA.style "max-width" "500px"
         ]
         [ Introduction.view ClickedNewGame ]
+    ]
+
+
+viewGameOverMessage : H.Html Msg
+viewGameOverMessage =
+  H.div []
+    [ H.h2 [] [ H.text "Game Over Message" ]
+    , viewMessage <|
+        Message.viewGameOver { onTryAgain = NoOp }
+    ]
+
+
+viewWinMessage : H.Html Msg
+viewWinMessage =
+  H.div []
+    [ H.h2 [] [ H.text "Win Message" ]
+    , viewMessage <|
+      Message.viewWin { onKeepPlaying = NoOp, onTryAgain = NoOp }
+    ]
+
+
+viewMessage : H.Html Msg -> H.Html Msg
+viewMessage message =
+  H.div []
+    [ H.node "style" []
+        [ H.text
+            """
+            .message-box {
+              width: 280px;
+              height: 280px;
+            }
+            @media screen and (min-width: 520px) {
+              .message-box {
+                width: 500px;
+                height: 500px;
+              }
+            }
+            """
+        ]
+    , H.div [ HA.class "message-box" ] [ message ]
     ]
 
 

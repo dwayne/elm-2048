@@ -3,7 +3,7 @@ module App.Data.Tile.Value exposing
   , twoOrFour
   , isEqual, is2048
   , double
-  , toInt, toString
+  , toString, toInt
   )
 
 
@@ -44,11 +44,11 @@ double (Value v) =
   Value <| 2 * v
 
 
-toInt : Value -> Int
-toInt (Value v) =
-  v
-
-
 toString : Value -> String
 toString (Value v) =
   String.fromInt v
+
+
+toInt : Value -> Int
+toInt (Value v) =
+  v

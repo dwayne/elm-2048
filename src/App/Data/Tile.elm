@@ -9,23 +9,25 @@ module App.Data.Tile exposing
 
 
 import App.Data.Points as Points exposing (Points)
-import App.Data.Tile.Position as Position exposing (Position)
+import App.Data.Tile.Position exposing (Position)
 import App.Data.Tile.Value as Value exposing (Value)
 
 
 type Tile
-  = New State
-  | Composite State
-  | Merged State Action
-  | Old State Action
+  = Tile Config
 
-
-type alias State =
-  { id : Int
+type alias Config =
+  { kind : Kind
+  , id : Int
   , value : Value
   , position : Position
   }
 
+type Kind
+  = New
+  | Composite
+  | Merged Action
+  | Old Action
 
 type Action
   = Stay
@@ -34,79 +36,56 @@ type Action
 
 new : Int -> Value -> Position -> Tile
 new id value position =
-  New <| State id value position
+  Tile <| Config New id value position
 
 
 composite : Int -> Value -> Position -> Tile
 composite id value position =
-  Composite <| State id value position
+  Tile <| Config Composite id value position
 
 
 merged : Int -> Value -> Position -> Position -> Tile
 merged id value from to =
-  Merged (State id value to) <|
-    if from == to then
-      Stay
-    else
-      MoveFrom from
+  let
+    action =
+      if from == to then
+        Stay
+      else
+        MoveFrom from
+  in
+  Tile <| Config (Merged action) id value to
 
 
 old : Int -> Value -> Position -> Position -> Tile
 old id value from to =
-  Old (State id value to) <|
-    if from == to then
-      Stay
-    else
-      MoveFrom from
+  let
+    action =
+      if from == to then
+        Stay
+      else
+        MoveFrom from
+  in
+  Tile <| Config (Old action) id value to
 
 
 getPosition : Tile -> Position
-getPosition tile =
-  case tile of
-    New { position } ->
-      position
-
-    Composite { position } ->
-      position
-
-    Merged { position } _ ->
-      position
-
-    Old { position } _ ->
-      position
+getPosition (Tile { position }) =
+  position
 
 
 is2048 : Tile -> Bool
-is2048 tile =
-  Value.is2048 <|
-    case tile of
-      New { value } ->
-        value
-
-      Composite { value } ->
-        value
-
-      Merged { value } _ ->
-        value
-
-      Old { value } _ ->
-        value
+is2048 (Tile { value }) =
+  Value.is2048 value
 
 
 age : Tile -> Maybe Tile
-age tile =
-  case tile of
-    New state ->
-      Just <| Old state Stay
-
-    Composite state ->
-      Just <| Old state Stay
-
-    Merged _ _ ->
+age (Tile config) =
+  case config.kind of
+    Merged _ ->
       Nothing
 
-    Old state _ ->
-      Just <| Old state Stay
+    _ ->
+      Just <| Tile { config | kind = Old Stay }
 
 
 type alias Info =
@@ -119,57 +98,48 @@ type alias Info =
 
 
 toInfo : Tile -> Info
-toInfo tile =
-  case tile of
-    New { id, value, position } ->
-      { kind = "new"
-      , id = id
-      , value = value
-      , from = position
-      , to = position
-      }
+toInfo (Tile { kind, id, value, position }) =
+  let
+    (kindAsString, from) =
+      case kind of
+        New ->
+          ("new", position)
 
-    Composite { id, value, position } ->
-      { kind = "composite"
-      , id = id
-      , value = value
-      , from = position
-      , to = position
-      }
+        Composite ->
+          ("composite", position)
 
-    Merged { id, value, position } action ->
-      { kind = "merged"
-      , id = id
-      , value = value
-      , from =
-          case action of
-            Stay ->
-              position
+        Merged action ->
+          ( "merged"
+          , case action of
+              Stay ->
+                position
 
-            MoveFrom from ->
-              from
-      , to = position
-      }
+              MoveFrom from_ ->
+                from_
+          )
 
-    Old { id, value, position } action ->
-      { kind = "old"
-      , id = id
-      , value = value
-      , from =
-          case action of
-            Stay ->
-              position
+        Old action ->
+          ( "old"
+          , case action of
+              Stay ->
+                position
 
-            MoveFrom from ->
-              from
-      , to = position
-      }
+              MoveFrom from_ ->
+                from_
+          )
+  in
+  { kind = kindAsString
+  , id = id
+  , value = value
+  , from = from
+  , to = position
+  }
 
 
 toPoints : Tile -> Points
-toPoints tile =
-  case tile of
-    Composite { value } ->
+toPoints (Tile { kind, value }) =
+  case kind of
+    Composite ->
       Points.fromValue value
 
     _ ->

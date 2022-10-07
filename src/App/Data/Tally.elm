@@ -1,7 +1,7 @@
 module App.Data.Tally exposing
-  ( Tally, zero
-  , getCurrent, getBest
+  ( Tally, Reckoning, zero
   , resetCurrent, addPoints
+  , toReckoning
   )
 
 
@@ -9,10 +9,10 @@ import App.Data.Points as Points exposing (Points)
 
 
 type Tally
-  = Tally Data
+  = Tally Reckoning
 
 
-type alias Data =
+type alias Reckoning =
   { current : Points
   , best : Points
   }
@@ -26,19 +26,9 @@ zero =
     }
 
 
-getCurrent : Tally -> Points
-getCurrent (Tally { current }) =
-  current
-
-
-getBest : Tally -> Points
-getBest (Tally { best }) =
-  best
-
-
 resetCurrent : Tally -> Tally
-resetCurrent (Tally tally) =
-  Tally { tally | current = Points.zero }
+resetCurrent (Tally reckoning) =
+  Tally { reckoning | current = Points.zero }
 
 
 addPoints : Points -> Tally -> Tally
@@ -51,3 +41,8 @@ addPoints points (Tally { current, best }) =
     { current = newCurrent
     , best = Points.max newCurrent best
     }
+
+
+toReckoning : Tally -> Reckoning
+toReckoning (Tally reckoning) =
+  reckoning

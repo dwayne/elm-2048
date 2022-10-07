@@ -168,7 +168,7 @@ view model =
     -- , viewGameOverMessage
     -- , viewWinMessage
     , viewGrid
-    -- , viewFooter
+    , viewFooter
     ]
 
 
@@ -200,12 +200,8 @@ viewScoreCard : Tally -> ScoreCard.State -> H.Html Msg
 viewScoreCard tally state =
   H.div []
     [ H.h2 [] [ H.text "Score Card" ]
-    , ScoreCard.view
-        { current = Tally.getCurrent tally
-        , best = Tally.getBest tally
-        }
-        state
-          |> H.map ChangedScoreCard
+    , ScoreCard.view (Tally.toReckoning tally) state
+        |> H.map ChangedScoreCard
     , H.p []
         [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
         , H.text " "
@@ -223,8 +219,7 @@ viewHeader tally state =
         , HA.style "max-width" "500px"
         ]
         [ Header.view
-            { current = Tally.getCurrent tally
-            , best = Tally.getBest tally
+            { reckoning = Tally.toReckoning tally
             , state = state
             , onChange = ChangedScoreCard
             }

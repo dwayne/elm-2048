@@ -25,7 +25,7 @@ view : Options msg -> H.Html msg
 view { header, message, gridState, onMove, onNewGame } =
   H.main_
     [ HA.class "main"
-    , HA.tabindex -1
+    , HA.tabindex 0
     , HA.autofocus True
     , onKeyDown onMove
     ]

@@ -1,11 +1,12 @@
 module App.View.ScoreCard exposing
   ( State, init, addPoints
   , Msg, update
-  , Options, view
+  , view
   )
 
 
 import App.Data.Points exposing (Points)
+import App.Data.Tally exposing (Reckoning)
 import App.View.Score as Score
 import Html as H
 import Html.Attributes as HA
@@ -45,13 +46,7 @@ update msg (State state) =
 -- VIEW
 
 
-type alias Options =
-  { current : Points
-  , best : Points
-  }
-
-
-view : Options -> State -> H.Html Msg
+view : Reckoning -> State -> H.Html Msg
 view { current, best } (State state) =
   H.div [ HA.class "score-card" ]
     [ H.div [ HA.class "score-card__score" ]

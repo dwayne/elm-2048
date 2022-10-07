@@ -36,8 +36,8 @@ type alias Model =
 
 type Status
   = Playing
-  | Won
-  | Loss
+  | Win
+  | GameOver
   | KeepPlaying
 
 
@@ -75,10 +75,10 @@ update msg model =
     Playing ->
       updatePlaying msg model
 
-    Won ->
+    Win ->
       updateGameOver msg model
 
-    Loss ->
+    GameOver ->
       updateGameOver msg model
 
     KeepPlaying ->
@@ -117,7 +117,7 @@ updatePlaying msg model =
       case maybeGrid of
         Just grid ->
           if Grid.has2048 grid then
-            ( { model | status = Won, grid = grid, gridState = Grid.fromGrid grid }
+            ( { model | status = Win, grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
           else if Grid.hasMoves grid then
@@ -125,7 +125,7 @@ updatePlaying msg model =
             , Cmd.none
             )
           else
-            ( { model | status = Loss, grid = grid, gridState = Grid.fromGrid grid }
+            ( { model | status = GameOver, grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
 
@@ -250,7 +250,7 @@ updateKeepPlaying msg model =
             , Cmd.none
             )
           else
-            ( { model | status = Loss, grid = grid, gridState = Grid.fromGrid grid }
+            ( { model | status = GameOver, grid = grid, gridState = Grid.fromGrid grid }
             , Cmd.none
             )
 
@@ -310,8 +310,7 @@ view : Model -> H.Html Msg
 view { status, tally, scoreCardState, gridState } =
   App.View.Main.view
     { header =
-        { current = Tally.getCurrent tally
-        , best = Tally.getBest tally
+        { reckoning = Tally.toReckoning tally
         , state = scoreCardState
         , onChange = ChangedScoreCard
         }
@@ -320,13 +319,13 @@ view { status, tally, scoreCardState, gridState } =
           Playing ->
             Grid.NoMessage
 
-          Won ->
+          Win ->
             Grid.WinMessage
-              { onTryAgain = ClickedNewGame
-              , onKeepPlaying = ClickedKeepPlaying
+              { onKeepPlaying = ClickedKeepPlaying
+              , onTryAgain = ClickedNewGame
               }
 
-          Loss ->
+          GameOver ->
             Grid.GameOverMessage
               { onTryAgain = ClickedNewGame
               }

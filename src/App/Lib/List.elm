@@ -1,4 +1,23 @@
-module App.Lib.List exposing (zip)
+module App.Lib.List exposing (compareBy, zip)
+
+
+{- Returns the order of the first non-equal comparison.
+
+If there are no comparisons or all of them are equal then EQ is returned.
+-}
+compareBy : List (comparable, comparable) -> Order
+compareBy comparisons =
+  case comparisons of
+    [] ->
+      EQ
+
+    (a, b) :: restComparisons ->
+      case compare a b of
+        EQ ->
+          compareBy restComparisons
+
+        order ->
+          order
 
 
 zip : List a -> List b -> List (a, b)

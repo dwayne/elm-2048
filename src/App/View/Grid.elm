@@ -157,10 +157,10 @@ viewGridTile clock { factor, tile } =
       Tile.toInfo tile
 
     (fromRow, fromCol) =
-      (from.row, from.col)
+      from
 
     (toRow, toCol) =
-      (to.row, to.col)
+      to
 
     (fromLeft, fromTop) =
       ( "(" ++ String.fromInt fromCol ++ " * var(--grid-gap) + " ++ String.fromInt (fromCol - 1) ++ " * var(--tile-size)" ++ ")"

@@ -296,8 +296,8 @@ viewGrid =
     , Grid.view Grid.NoMessage <|
         Grid.init
           { tiles =
-              [ Tile.new 1 Value.two { row = 1, col = 2 }
-              , Tile.new 2 Value.four { row = 4, col = 3 }
+              [ Tile.new 1 Value.two (1, 2)
+              , Tile.new 2 Value.four (4, 3)
               ]
           , moveDuration = moveDuration
           }

@@ -11,19 +11,15 @@ import Set exposing (Set)
 
 
 type alias Position =
-  { row : Int
-  , col : Int
-  }
+  (Int, Int)
 
 
 availablePositions : List Position -> List Position
 availablePositions unavailablePositions =
   unavailablePositions
-    |> List.map (\{ row, col } -> (row, col))
     |> Set.fromList
     |> Set.diff allPositions
     |> Set.toList
-    |> List.map (\(row, col) -> Position row col)
 
 
 selectAtMost2 : List Position -> Random.Generator (List Position)
@@ -31,7 +27,7 @@ selectAtMost2 =
   availablePositions >> selectAtMostN 2 >> Random.map Tuple.first
 
 
-allPositions : Set (Int, Int)
+allPositions : Set Position
 allPositions =
   Set.fromList
     [ (1, 1), (1, 2), (1, 3), (1, 4)

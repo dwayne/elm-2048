@@ -2,8 +2,8 @@ module App.Data.Grid exposing
   ( Grid, empty, reset
   , has2048, hasMoves
   , insertAtMost2Tiles
-  , toTiles, toPoints
   , Direction(..), move
+  , toPoints, toTiles
   )
 
 
@@ -46,24 +46,23 @@ has2048 (Grid { tiles }) =
 hasMoves : Grid -> Bool
 hasMoves (Grid { tiles } as grid) =
   let
+    unavailablePositions =
+      List.map Tile.getPosition tiles
+
     hasAvailablePositions =
-      tiles
-        |> List.map Tile.getPosition
-        |> Position.availablePositions
-        |> List.isEmpty
-        |> not
+      not <| List.isEmpty <| Position.availablePositions unavailablePositions
 
     canMoveRight =
-      \_ -> not <| move Right grid == Nothing
+      \_ -> move Right grid /= Nothing
 
     canMoveUp =
-      \_ -> not <| move Up grid == Nothing
+      \_ -> move Up grid /= Nothing
   in
   hasAvailablePositions || canMoveRight () || canMoveUp ()
 
 
 insertAtMost2Tiles : Grid -> Random.Generator (Maybe Grid)
-insertAtMost2Tiles (Grid { currentId, tiles } as grid) =
+insertAtMost2Tiles (Grid { currentId, tiles }) =
   let
     unavailablePositions =
       List.map Tile.getPosition tiles
@@ -115,19 +114,7 @@ addTiles valueAndPositions currentId tiles =
       addTiles
         restValueAndPositions
         (currentId + 1)
-        (tiles ++ [ Tile.new currentId value position ])
-
-
-toTiles : Grid -> List Tile
-toTiles (Grid { tiles }) =
-  tiles
-
-
-toPoints : Grid -> Points
-toPoints (Grid { tiles }) =
-  tiles
-    |> List.map Tile.toPoints
-    |> List.foldr Points.add Points.zero
+        (Tile.new currentId value position :: tiles)
 
 
 type Direction
@@ -137,8 +124,8 @@ type Direction
   | Up
 
 
-type alias Config =
-  { nextLastPosition : Position -> Position
+type alias MovementConfig =
+  { toStartingPosition : Position -> Position
   , updateLastPosition : Position -> Position
   , isReadyToVacate : Position -> Position -> Bool
   }
@@ -147,7 +134,7 @@ type alias Config =
 type alias MovementState =
   { currentId : Int
   , lastPosition : Position
-  , tileInCell : Maybe Tile.Info
+  , infoInCell : Maybe Tile.Info
   , newTiles : List Tile
   , atLeastOneTileMoved : Bool
   }
@@ -163,15 +150,14 @@ move direction (Grid { currentId, tiles })=
             |> age
             |> List.sortWith compareRight
             |> moveHelper
-                { nextLastPosition = \{ row } -> Position row 4
-                , updateLastPosition = \{ row, col } -> { row = row, col = col - 1 }
+                { toStartingPosition = \(r, _) -> (r, 4)
+                , updateLastPosition = \(r, c) -> (r, c - 1)
                 , isReadyToVacate =
-                    \tilePosition lastPosition ->
-                      tilePosition.row > lastPosition.row
+                    \(tileRow, _) (lastRow, _) -> tileRow > lastRow
                 }
                 { currentId = currentId
-                , lastPosition = Position 1 4
-                , tileInCell = Nothing
+                , lastPosition = (1, 4)
+                , infoInCell = Nothing
                 , newTiles = []
                 , atLeastOneTileMoved = False
                 }
@@ -181,15 +167,14 @@ move direction (Grid { currentId, tiles })=
             |> age
             |> List.sortWith compareLeft
             |> moveHelper
-                { nextLastPosition = \{ row } -> Position row 1
-                , updateLastPosition = \{ row, col } -> { row = row, col = col + 1 }
+                { toStartingPosition = \(r, _) -> (r, 1)
+                , updateLastPosition = \(r, c) -> (r, c + 1)
                 , isReadyToVacate =
-                    \tilePosition lastPosition ->
-                      tilePosition.row > lastPosition.row
+                    \(tileRow, _) (lastRow, _) -> tileRow > lastRow
                 }
                 { currentId = currentId
-                , lastPosition = Position 1 1
-                , tileInCell = Nothing
+                , lastPosition = (1, 1)
+                , infoInCell = Nothing
                 , newTiles = []
                 , atLeastOneTileMoved = False
                 }
@@ -199,15 +184,14 @@ move direction (Grid { currentId, tiles })=
             |> age
             |> List.sortWith compareDown
             |> moveHelper
-                { nextLastPosition = \{ col } -> Position 4 col
-                , updateLastPosition = \{ row, col } -> { row = row - 1, col = col }
+                { toStartingPosition = \(_, c) -> (4, c)
+                , updateLastPosition = \(r, c) -> (r - 1, c)
                 , isReadyToVacate =
-                    \tilePosition lastPosition ->
-                      tilePosition.col > lastPosition.col
+                    \(_, tileCol) (_, lastCol) -> tileCol > lastCol
                 }
                 { currentId = currentId
-                , lastPosition = Position 4 1
-                , tileInCell = Nothing
+                , lastPosition = (4, 1)
+                , infoInCell = Nothing
                 , newTiles = []
                 , atLeastOneTileMoved = False
                 }
@@ -217,15 +201,14 @@ move direction (Grid { currentId, tiles })=
             |> age
             |> List.sortWith compareUp
             |> moveHelper
-                { nextLastPosition = \{ col } -> Position 1 col
-                , updateLastPosition = \{ row, col } -> { row = row + 1, col = col }
+                { toStartingPosition = \(_, c) -> (1, c)
+                , updateLastPosition = \(r, c) -> (r + 1, c)
                 , isReadyToVacate =
-                    \tilePosition lastPosition ->
-                      tilePosition.col > lastPosition.col
+                    \(_, tileCol) (_, lastCol) -> tileCol > lastCol
                 }
                 { currentId = currentId
-                , lastPosition = Position 1 1
-                , tileInCell = Nothing
+                , lastPosition = (1, 1)
+                , infoInCell = Nothing
                 , newTiles = []
                 , atLeastOneTileMoved = False
                 }
@@ -240,52 +223,55 @@ move direction (Grid { currentId, tiles })=
     Nothing
 
 
-moveHelper : Config -> MovementState -> List Tile -> MovementState
+moveHelper : MovementConfig -> MovementState -> List Tile -> MovementState
 moveHelper config state tiles =
   case tiles of
     [] ->
-      case state.tileInCell of
+      case state.infoInCell of
         Nothing ->
           state
 
         Just { id, value, from, to } ->
           { state
           | lastPosition = to
-          , tileInCell = Nothing
-          , newTiles =
-              state.newTiles ++ [ Tile.old id value from to ]
+          , infoInCell = Nothing
+          , newTiles = Tile.old id value from to :: state.newTiles
           }
 
     tile :: restTiles ->
       let
-        currTile =
+        currInfo =
           Tile.toInfo tile
 
         state1 =
-          if config.isReadyToVacate currTile.to state.lastPosition then
+          if config.isReadyToVacate currInfo.to state.lastPosition then
             { state
-            | lastPosition = config.nextLastPosition currTile.to
-            , tileInCell = Nothing
+            | lastPosition = config.toStartingPosition currInfo.to
+            , infoInCell = Nothing
             , newTiles =
-                (++) state.newTiles <|
-                  case state.tileInCell of
-                    Nothing ->
-                      []
+                case state.infoInCell of
+                  Nothing ->
+                    state.newTiles
 
-                    Just { id, value, from, to } ->
-                      [ Tile.old id value from to ]
+                  Just { id, value, from, to } ->
+                    Tile.old id value from to :: state.newTiles
             }
           else
             state
 
         state2 =
-          case state1.tileInCell of
+          case state1.infoInCell of
             Nothing ->
               { state1
-              | tileInCell =
-                  Just { currTile | from = currTile.to, to = state1.lastPosition }
+              | infoInCell =
+                  Just
+                    { currInfo
+                    | from = currInfo.to
+                    , to = state1.lastPosition
+                    }
               , atLeastOneTileMoved =
-                  state1.atLeastOneTileMoved || (currTile.to /= state1.lastPosition)
+                  state1.atLeastOneTileMoved ||
+                    (currInfo.to /= state1.lastPosition)
               }
 
             Just { id, value, from, to } ->
@@ -293,31 +279,29 @@ moveHelper config state tiles =
                 lastPosition =
                   config.updateLastPosition state1.lastPosition
               in
-              if Value.isEqual currTile.value value then
+              if Value.isEqual currInfo.value value then
                 { state1
-                | newTiles =
-                    (++) state1.newTiles <|
-                      [ Tile.merged currTile.id currTile.value currTile.to to
-                      , Tile.merged id value from to
-                      , Tile.composite
-                          state1.currentId
-                          (Value.double value)
-                          to
-                      ]
-                , currentId = state1.currentId + 1
-                , tileInCell = Nothing
+                | currentId = state1.currentId + 1
                 , lastPosition = lastPosition
+                , infoInCell = Nothing
+                , newTiles =
+                    [ Tile.merged currInfo.id currInfo.value currInfo.to to
+                    , Tile.merged id value from to
+                    , Tile.composite
+                        state1.currentId
+                        (Value.double value)
+                        to
+                    ] ++ state1.newTiles
                 , atLeastOneTileMoved = True
                 }
               else
                 { state1
-                | newTiles =
-                    state1.newTiles ++ [ Tile.old id value from to ]
-                , tileInCell =
-                    Just { currTile | from = currTile.to, to = lastPosition }
-                , lastPosition = lastPosition
+                | lastPosition = lastPosition
+                , infoInCell =
+                    Just { currInfo | from = currInfo.to, to = lastPosition }
+                , newTiles = Tile.old id value from to :: state1.newTiles
                 , atLeastOneTileMoved =
-                    state1.atLeastOneTileMoved || (currTile.to /= lastPosition)
+                    state1.atLeastOneTileMoved || (currInfo.to /= lastPosition)
                 }
       in
       moveHelper config state2 restTiles
@@ -331,66 +315,54 @@ age =
 compareRight : Tile -> Tile -> Order
 compareRight tile1 tile2 =
   let
-    p1 =
-      Tile.getPosition tile1
-
-    p2 =
-      Tile.getPosition tile2
+    ((r1, c1), (r2, c2)) =
+      ( Tile.getPosition tile1
+      , Tile.getPosition tile2
+      )
   in
-  if p1.row < p2.row then
-    LT
-  else if p1.row > p2.row then
-    GT
-  else
-    compare p2.col p1.col
+  List.compareBy [(r1, r2), (c2, c1)]
 
 
 compareLeft : Tile -> Tile -> Order
 compareLeft tile1 tile2 =
   let
-    p1 =
-      Tile.getPosition tile1
-
-    p2 =
-      Tile.getPosition tile2
+    ((r1, c1), (r2, c2)) =
+      ( Tile.getPosition tile1
+      , Tile.getPosition tile2
+      )
   in
-  if p1.row < p2.row then
-    LT
-  else if p1.row > p2.row then
-    GT
-  else
-    compare p1.col p2.col
+  List.compareBy [(r1, r2), (c1, c2)]
 
 
 compareDown : Tile -> Tile -> Order
 compareDown tile1 tile2 =
   let
-    p1 =
-      Tile.getPosition tile1
-
-    p2 =
-      Tile.getPosition tile2
+    ((r1, c1), (r2, c2)) =
+      ( Tile.getPosition tile1
+      , Tile.getPosition tile2
+      )
   in
-  if p1.col < p2.col then
-    LT
-  else if p1.col > p2.col then
-    GT
-  else
-    compare p2.row p1.row
+  List.compareBy [(c1, c2), (r2, r1)]
 
 
 compareUp : Tile -> Tile -> Order
 compareUp tile1 tile2 =
   let
-    p1 =
-      Tile.getPosition tile1
-
-    p2 =
-      Tile.getPosition tile2
+    ((r1, c1), (r2, c2)) =
+      ( Tile.getPosition tile1
+      , Tile.getPosition tile2
+      )
   in
-  if p1.col < p2.col then
-    LT
-  else if p1.col > p2.col then
-    GT
-  else
-    compare p1.row p2.row
+  List.compareBy [(c1, c2), (r1, r2)]
+
+
+toPoints : Grid -> Points
+toPoints (Grid { tiles }) =
+  tiles
+    |> List.map Tile.toPoints
+    |> List.foldr Points.add Points.zero
+
+
+toTiles : Grid -> List Tile
+toTiles (Grid { tiles }) =
+  tiles

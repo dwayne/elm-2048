@@ -76,24 +76,28 @@ update msg model =
 
     Moved direction ->
       let
-        ((maybePoints, game), cmd) =
+        (outcome, cmd) =
           Game.move direction model.game
-
-        scoreCardState =
-          case maybePoints of
-            Just points ->
-              ScoreCard.addPoints points model.scoreCardState
-
-            Nothing ->
-              model.scoreCardState
       in
-      ( { model
-        | game = game
-        , scoreCardState = scoreCardState
-        , gridState = toGridState game
-        }
-      , Cmd.map ChangedGame cmd
-      )
+      case outcome of
+        Game.NoMovement ->
+          ( model
+          , Cmd.none
+          )
+
+        Game.NoPoints game ->
+          ( { model | game = game, gridState = toGridState game }
+          , Cmd.map ChangedGame cmd
+          )
+
+        Game.EarnedPoints points game ->
+          ( { model
+            | game = game
+            , scoreCardState = ScoreCard.addPoints points model.scoreCardState
+            , gridState = toGridState game
+            }
+          , Cmd.map ChangedGame cmd
+          )
 
     ChangedGame gameMsg ->
       let

@@ -3,7 +3,7 @@ module App.Data.Game exposing
   , start, new
   , keepPlaying
   , getGrid
-  , Direction, move
+  , Direction, Outcome(..), move
   , Msg, update
   , State, toState
   )
@@ -82,7 +82,13 @@ type alias Direction =
   Grid.Direction
 
 
-move : Direction -> Game -> ((Maybe Points, Game), Cmd Msg)
+type Outcome
+  = NoMovement
+  | NoPoints Game
+  | EarnedPoints Points Game
+
+
+move : Direction -> Game -> (Outcome, Cmd Msg)
 move direction (Game state as game) =
   case Grid.move direction state.grid of
     Just grid ->
@@ -92,27 +98,25 @@ move direction (Game state as game) =
       in
       if state.status == Playing || state.status == KeepPlaying then
         ( if Points.isZero points then
-            ( Nothing
-            , Game { state | grid = grid }
-            )
+            NoPoints <|
+              Game { state | grid = grid }
 
           else
-            ( Just points
-            , Game
+            EarnedPoints points <|
+              Game
                 { state
                 | grid = grid
                 , tally = Tally.addPoints points state.tally
                 }
-            )
         , insertAtMost2Tiles grid
         )
       else
-        ( ( Nothing, game )
+        ( NoMovement
         , Cmd.none
         )
 
     Nothing ->
-      ( ( Nothing, game )
+      ( NoMovement
       , Cmd.none
       )
 

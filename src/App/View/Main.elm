@@ -27,7 +27,7 @@ view { header, message, gridState, onMove, onNewGame } =
     [ HA.class "main"
     , HA.tabindex 0
     , HA.autofocus True
-    , onKeyDown onMove
+    , onKeyDown onMove onNewGame
     ]
     [ H.div [ HA.class "main__body" ]
         [ H.div [ HA.class "main__header" ] [ Header.view header ]
@@ -38,31 +38,61 @@ view { header, message, gridState, onMove, onNewGame } =
     ]
 
 
-onKeyDown : (Grid.Direction -> msg) -> H.Attribute msg
-onKeyDown toMsg =
-  directionDecoder
-    |> JD.map (\d -> (toMsg d, True))
+onKeyDown : (Grid.Direction -> msg) -> msg -> H.Attribute msg
+onKeyDown onMove onNewGame =
+  let
+    keyDecoder =
+      JD.field "key" JD.string
+        |> JD.andThen
+            (\key ->
+              case (key, String.toUpper key) of
+                -- Arrow keys: Up, Right, Down, Left
+                ("ArrowUp", _) ->
+                  JD.succeed <| onMove Grid.Up
+
+                ("ArrowRight", _) ->
+                  JD.succeed <| onMove Grid.Right
+
+                ("ArrowDown", _) ->
+                  JD.succeed <| onMove Grid.Down
+
+                ("ArrowLeft", _) ->
+                  JD.succeed <| onMove Grid.Left
+
+                -- Vim: KLJH
+                (_, "K") ->
+                  JD.succeed <| onMove Grid.Up
+
+                (_, "L") ->
+                  JD.succeed <| onMove Grid.Right
+
+                (_, "J") ->
+                  JD.succeed <| onMove Grid.Down
+
+                (_, "H") ->
+                  JD.succeed <| onMove Grid.Left
+
+                -- WDSA
+                (_, "W") ->
+                  JD.succeed <| onMove Grid.Up
+
+                (_, "D") ->
+                  JD.succeed <| onMove Grid.Right
+
+                (_, "S") ->
+                  JD.succeed <| onMove Grid.Down
+
+                (_, "A") ->
+                  JD.succeed <| onMove Grid.Left
+
+                -- Restart
+                (_, "R") ->
+                  JD.succeed onNewGame
+
+                _ ->
+                  JD.fail ""
+            )
+  in
+  keyDecoder
+    |> JD.map (\msg -> (msg, True))
     |> HE.preventDefaultOn "keydown"
-
-
-directionDecoder : JD.Decoder Grid.Direction
-directionDecoder =
-  JD.field "key" JD.string
-    |> JD.andThen
-        (\key ->
-          case key of
-            "ArrowRight" ->
-              JD.succeed Grid.Right
-
-            "ArrowLeft" ->
-              JD.succeed Grid.Left
-
-            "ArrowDown" ->
-              JD.succeed Grid.Down
-
-            "ArrowUp" ->
-              JD.succeed Grid.Up
-
-            _ ->
-              JD.fail ""
-        )

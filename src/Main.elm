@@ -4,7 +4,7 @@ module Main exposing (main)
 import App.Data.Game as Game exposing (Game)
 import App.Data.Tally as Tally
 import App.View.Grid as Grid
-import App.View.Main
+import App.View.Main as MainView
 import App.View.ScoreCard as ScoreCard
 import Browser
 import Html as H
@@ -28,6 +28,7 @@ type alias Model =
   { game : Game
   , scoreCardState : ScoreCard.State
   , gridState : Grid.State
+  , mainViewState : MainView.State
   }
 
 
@@ -40,6 +41,7 @@ init _ =
   ( { game = game
     , scoreCardState = ScoreCard.init
     , gridState = toGridState game
+    , mainViewState = MainView.init
     }
   , Cmd.map ChangedGame cmd
   )
@@ -55,6 +57,7 @@ type Msg
   | ChangedGame Game.Msg
   | ChangedScoreCard ScoreCard.Msg
   | ChangedGrid Grid.Msg
+  | ChangedMainView MainView.Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -120,6 +123,15 @@ update msg model =
       , Cmd.none
       )
 
+    ChangedMainView mainMsg ->
+      let
+        (mainViewState, cmd) =
+          MainView.update { onMove = Moved } mainMsg model.mainViewState
+      in
+      ( { model | mainViewState = mainViewState }
+      , cmd
+      )
+
 
 toGridState : Game -> Grid.State
 toGridState =
@@ -143,7 +155,7 @@ view { game, scoreCardState, gridState } =
     { status, tally } =
       Game.toState game
   in
-  App.View.Main.view
+  MainView.view
     { header =
         { reckoning = Tally.toReckoning tally
         , state = scoreCardState
@@ -170,4 +182,5 @@ view { game, scoreCardState, gridState } =
     , gridState = gridState
     , onMove = Moved
     , onNewGame = ClickedNewGame
+    , onChange = ChangedMainView
     }

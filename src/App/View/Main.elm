@@ -119,7 +119,8 @@ directionOfMotion startPoint endPoint =
 
 
 type alias Options msg =
-  { header : Header.Options msg
+  { id : String
+  , header : Header.Options msg
   , message : Grid.Message msg
   , gridState : Grid.State
   , onMove : Grid.Direction -> msg
@@ -129,9 +130,10 @@ type alias Options msg =
 
 
 view : Options msg -> H.Html msg
-view { header, message, gridState, onMove, onNewGame, onChange } =
+view { id, header, message, gridState, onMove, onNewGame, onChange } =
   H.main_
-    [ HA.class "main"
+    [ HA.id id
+    , HA.class "main"
     , HA.tabindex 0
     , HA.autofocus True
     , onKeyDown onMove onNewGame

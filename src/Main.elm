@@ -7,8 +7,10 @@ import App.View.Grid as Grid
 import App.View.Main as MainView
 import App.View.ScoreCard as ScoreCard
 import Browser
+import Browser.Dom as BD
 import Html as H
 import Random
+import Task
 
 
 main : Program () Model Msg
@@ -19,6 +21,13 @@ main =
     , update = update
     , subscriptions = subscriptions
     }
+
+
+-- CONSTANTS
+
+
+mainViewId : String
+mainViewId = "main"
 
 
 -- MODEL
@@ -43,7 +52,10 @@ init _ =
     , gridState = toGridState game
     , mainViewState = MainView.init
     }
-  , Cmd.map ChangedGame cmd
+  , Cmd.batch
+      [ focus mainViewId
+      , Cmd.map ChangedGame cmd
+      ]
   )
 
 
@@ -51,7 +63,8 @@ init _ =
 
 
 type Msg
-  = ClickedNewGame
+  = Focused
+  | ClickedNewGame
   | ClickedKeepPlaying
   | Moved Game.Direction
   | ChangedGame Game.Msg
@@ -63,18 +76,26 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
+    Focused ->
+      ( model
+      , Cmd.none
+      )
+
     ClickedNewGame ->
       let
         (game, cmd) =
           Game.new model.game
       in
       ( { model | game = game, gridState = toGridState game }
-      , Cmd.map ChangedGame cmd
+      , Cmd.batch
+          [ focus mainViewId
+          , Cmd.map ChangedGame cmd
+          ]
       )
 
     ClickedKeepPlaying ->
       ( { model | game = Game.keepPlaying model.game }
-      , Cmd.none
+      , focus mainViewId
       )
 
     Moved direction ->
@@ -133,6 +154,11 @@ update msg model =
       )
 
 
+focus : String -> Cmd Msg
+focus =
+  Task.attempt (always Focused) << BD.focus
+
+
 toGridState : Game -> Grid.State
 toGridState =
   Grid.fromGrid << Game.getGrid
@@ -156,7 +182,8 @@ view { game, scoreCardState, gridState } =
       Game.toState game
   in
   MainView.view
-    { header =
+    { id = mainViewId
+    , header =
         { reckoning = Tally.toReckoning tally
         , state = scoreCardState
         , onChange = ChangedScoreCard

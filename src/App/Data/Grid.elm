@@ -4,6 +4,7 @@ module App.Data.Grid exposing
   , insertAtMost2Tiles
   , Direction(..), move
   , toPoints, toTiles
+  , encode, decoder
   )
 
 
@@ -12,14 +13,19 @@ import App.Data.Tile as Tile exposing (Tile)
 import App.Data.Tile.Position as Position exposing (Position)
 import App.Data.Tile.Value as Value exposing (Value)
 import App.Lib.List as List
+import Json.Decode as JD
+import Json.Encode as JE
 import Random
 
 
 type Grid
-  = Grid
-      { currentId : Int
-      , tiles : List Tile
-      }
+  = Grid State
+
+
+type alias State =
+  { currentId : Int
+  , tiles : List Tile
+  }
 
 
 empty : Grid
@@ -366,3 +372,36 @@ toPoints (Grid { tiles }) =
 toTiles : Grid -> List Tile
 toTiles (Grid { tiles }) =
   tiles
+
+
+encode : Grid -> JE.Value
+encode (Grid { currentId, tiles }) =
+  JE.object
+    [ ( "currentId", JE.int currentId )
+    , ( "tiles", Tile.encode tiles )
+    ]
+
+
+decoder : JD.Decoder Grid
+decoder =
+  JD.map Grid stateDecoder
+
+
+stateDecoder : JD.Decoder State
+stateDecoder =
+  JD.map2 State
+    (JD.field "currentId" nonNegativeDecoder)
+    (JD.field "tiles" <| JD.list Tile.decoder)
+
+
+nonNegativeDecoder : JD.Decoder Int
+nonNegativeDecoder =
+  JD.int
+    |> JD.andThen
+        (\n ->
+          if n >= 0 then
+            JD.succeed n
+
+          else
+            JD.fail <| "expected a non-negative integer: " ++ String.fromInt n
+        )

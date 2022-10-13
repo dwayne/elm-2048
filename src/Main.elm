@@ -3,17 +3,19 @@ module Main exposing (main)
 
 import App.Data.Game as Game exposing (Game)
 import App.Data.Tally as Tally
+import App.Port as Port
 import App.View.Grid as Grid
 import App.View.Main as MainView
 import App.View.ScoreCard as ScoreCard
 import Browser
 import Browser.Dom as BD
 import Html as H
+import Json.Encode as JE
 import Random
 import Task
 
 
-main : Program () Model Msg
+main : Program JE.Value Model Msg
 main =
   Browser.element
     { init = init
@@ -41,11 +43,11 @@ type alias Model =
   }
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
+init : JE.Value -> (Model, Cmd Msg)
+init value =
   let
     (game, cmd) =
-      Game.start
+      Game.load value
   in
   ( { game = game
     , scoreCardState = ScoreCard.init
@@ -89,13 +91,21 @@ update msg model =
       ( { model | game = game, gridState = toGridState game }
       , Cmd.batch
           [ focus mainViewId
+          , Port.save game
           , Cmd.map ChangedGame cmd
           ]
       )
 
     ClickedKeepPlaying ->
-      ( { model | game = Game.keepPlaying model.game }
-      , focus mainViewId
+      let
+        game =
+          Game.keepPlaying model.game
+      in
+      ( { model | game = game }
+      , Cmd.batch
+          [ focus mainViewId
+          , Port.save game
+          ]
       )
 
     Moved direction ->
@@ -111,7 +121,10 @@ update msg model =
 
         Game.NoPoints game ->
           ( { model | game = game, gridState = toGridState game }
-          , Cmd.map ChangedGame cmd
+          , Cmd.batch
+              [ Port.save game
+              , Cmd.map ChangedGame cmd
+              ]
           )
 
         Game.EarnedPoints points game ->
@@ -120,7 +133,10 @@ update msg model =
             , scoreCardState = ScoreCard.addPoints points model.scoreCardState
             , gridState = toGridState game
             }
-          , Cmd.map ChangedGame cmd
+          , Cmd.batch
+              [ Port.save game
+              , Cmd.map ChangedGame cmd
+              ]
           )
 
     ChangedGame gameMsg ->
@@ -129,7 +145,7 @@ update msg model =
           Game.update gameMsg model.game
       in
       ( { model | game = game, gridState = toGridState game }
-      , Cmd.none
+      , Port.save game
       )
 
     ChangedScoreCard scoreCardMsg ->

@@ -2,10 +2,13 @@ module App.Data.Tally exposing
   ( Tally, Reckoning, zero
   , resetCurrent, addPoints
   , toReckoning
+  , encode, decoder
   )
 
 
 import App.Data.Points as Points exposing (Points)
+import Json.Decode as JD
+import Json.Encode as JE
 
 
 type Tally
@@ -46,3 +49,23 @@ addPoints points (Tally { current, best }) =
 toReckoning : Tally -> Reckoning
 toReckoning (Tally reckoning) =
   reckoning
+
+
+encode : Tally -> JE.Value
+encode (Tally { current, best }) =
+  JE.object
+    [ ( "current", Points.encode current )
+    , ( "best", Points.encode best )
+    ]
+
+
+decoder : JD.Decoder Tally
+decoder =
+  JD.map Tally reckoningDecoder
+
+
+reckoningDecoder : JD.Decoder Reckoning
+reckoningDecoder =
+  JD.map2 Reckoning
+    (JD.field "current" Points.decoder)
+    (JD.field "best" Points.decoder)

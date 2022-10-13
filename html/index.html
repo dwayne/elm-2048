@@ -11,8 +11,28 @@
     <div id="app"></div>
     <script src="/app.js"></script>
     <script>
-      Elm.Main.init({
-        node: document.getElementById("app")
+      const key = "elm-2048-state";
+      const value = localStorage.getItem(key);
+
+      let savedState = null;
+      if (value) {
+        try {
+          savedState = JSON.parse(value);
+        } catch (error) {
+          console.error("The game state seems to be corrupted. We will have to start a new game.");
+          console.error(error);
+        }
+      }
+
+      const app = Elm.Main.init({
+        node: document.getElementById("app"),
+        flags: savedState
+      });
+
+      app.ports.send.subscribe(message => {
+        if (message.tag === "save") {
+          localStorage.setItem(key, JSON.stringify(message.payload));
+        }
       });
     </script>
   </body>

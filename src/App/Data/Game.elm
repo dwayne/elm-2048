@@ -1,17 +1,20 @@
 module App.Data.Game exposing
   ( Game, Status(..)
-  , start, new
+  , start, new, load
   , keepPlaying
   , getGrid
   , Direction, Outcome(..), move
   , Msg, update
   , State, toState
+  , encode, decoder
   )
 
 
 import App.Data.Grid as Grid exposing (Grid)
 import App.Data.Points as Points exposing (Points)
 import App.Data.Tally as Tally exposing (Tally)
+import Json.Decode as JD
+import Json.Encode as JE
 import Random
 
 
@@ -63,6 +66,54 @@ new (Game state) =
       }
   , insertAtMost2Tiles grid
   )
+
+
+load : JE.Value -> (Game, Cmd Msg)
+load value =
+  let
+    startOver tally =
+      -- NOTE:
+      -- 1. It is similar to start but we keep the best score.
+      -- 2. It is similar to new but we use an empty grid.
+      let
+        grid =
+          Grid.empty -- Use an empty grid
+      in
+      ( Game
+          { status = Playing
+          , tally = Tally.resetCurrent tally -- Keep the best score
+          , grid = grid
+          }
+      , insertAtMost2Tiles grid
+      )
+  in
+  case JD.decodeValue decoder value of
+    Ok (Game { status, tally, grid } as game) ->
+      case status of
+        GameOver ->
+          startOver tally
+
+        Playing ->
+          let
+            { current } =
+              Tally.toReckoning tally
+
+            numTiles =
+              List.length <| Grid.toTiles grid
+          in
+          if Points.isZero current && numTiles == 2 then
+            -- NOTE:
+            -- We do this so that when the user refreshes the page
+            -- it behaves as though they clicked the New Game button.
+            startOver tally
+          else
+            ( game, Cmd.none )
+
+        _ ->
+          ( game, Cmd.none )
+
+    Err _ ->
+      start
 
 
 keepPlaying : Game -> Game
@@ -159,3 +210,64 @@ update msg (Game state as game) =
 toState : Game -> State
 toState (Game state) =
   state
+
+
+encode : Game -> JE.Value
+encode (Game { status, tally, grid }) =
+  JE.object
+    [ ( "status", encodeStatus status )
+    , ( "tally", Tally.encode tally )
+    , ( "grid", Grid.encode grid )
+    ]
+
+
+encodeStatus : Status -> JE.Value
+encodeStatus status =
+  case status of
+    Playing ->
+      JE.string "playing"
+
+    Win ->
+      JE.string "win"
+
+    GameOver ->
+      JE.string "gameOver"
+
+    KeepPlaying ->
+      JE.string "keepPlaying"
+
+
+decoder : JD.Decoder Game
+decoder =
+  JD.map Game stateDecoder
+
+
+stateDecoder : JD.Decoder State
+stateDecoder =
+  JD.map3 State
+    (JD.field "status" statusDecoder)
+    (JD.field "tally" Tally.decoder)
+    (JD.field "grid" Grid.decoder)
+
+
+statusDecoder : JD.Decoder Status
+statusDecoder =
+  JD.string
+    |> JD.andThen
+        (\s ->
+          case s of
+            "playing" ->
+              JD.succeed Playing
+
+            "win" ->
+              JD.succeed Win
+
+            "gameOver" ->
+              JD.succeed GameOver
+
+            "keepPlaying" ->
+              JD.succeed KeepPlaying
+
+            _ ->
+              JD.fail <| "expected one of playing, win, gameOver, or keepPlaying: " ++ s
+        )

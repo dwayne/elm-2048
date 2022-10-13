@@ -5,12 +5,15 @@ module App.Data.Tile exposing
   , age
   , Info, toInfo
   , toPoints
+  , encode, decoder
   )
 
 
 import App.Data.Points as Points exposing (Points)
-import App.Data.Tile.Position exposing (Position)
+import App.Data.Tile.Position as Position exposing (Position)
 import App.Data.Tile.Value as Value exposing (Value)
+import Json.Decode as JD
+import Json.Encode as JE
 
 
 type Tile
@@ -144,3 +147,34 @@ toPoints (Tile { kind, value }) =
 
     _ ->
       Points.zero
+
+
+encode : List Tile -> JE.Value
+encode =
+  let
+    isEncodeable (Tile { kind }) =
+      case kind of
+        Merged _ ->
+          False
+
+        _ ->
+          True
+  in
+  List.filter isEncodeable >> JE.list encodeTile
+
+
+encodeTile : Tile -> JE.Value
+encodeTile (Tile { id, value, position }) =
+  JE.object
+    [ ( "id", JE.int id )
+    , ( "value", Value.encode value )
+    , ( "position", Position.encode position )
+    ]
+
+
+decoder : JD.Decoder Tile
+decoder =
+  JD.map3 new
+    (JD.field "id" JD.int)
+    (JD.field "value" Value.decoder)
+    (JD.field "position" Position.decoder)

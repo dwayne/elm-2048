@@ -4,9 +4,12 @@ module App.Data.Tile.Value exposing
   , isEqual, is2048
   , double
   , toString, toInt
+  , encode, decoder
   )
 
 
+import Json.Decode as JD
+import Json.Encode as JE
 import Random
 
 
@@ -52,3 +55,36 @@ toString (Value v) =
 toInt : Value -> Int
 toInt (Value v) =
   v
+
+
+encode : Value -> JE.Value
+encode (Value v) =
+  JE.int v
+
+
+decoder : JD.Decoder Value
+decoder =
+  JD.map Value positivePowerOf2Decoder
+
+
+positivePowerOf2Decoder : JD.Decoder Int
+positivePowerOf2Decoder =
+  JD.int
+    |> JD.andThen
+        (\n ->
+          if isPositivePowerOf2 n then
+            JD.succeed n
+
+          else
+            JD.fail <| "expected a positive power of 2: " ++ String.fromInt n
+        )
+
+
+isPositivePowerOf2 : Int -> Bool
+isPositivePowerOf2 n =
+  if n == 2 then
+    True
+  else if n > 2 && modBy 2 n == 0 then
+    isPositivePowerOf2 <| n // 2
+  else
+    False

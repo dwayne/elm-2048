@@ -1,20 +1,20 @@
 @font-face {
     font-family: "Clear Sans";
-    src: url("/fonts/ClearSansLight.woff") format("woff");
+    src: url("{{ROOT}}/fonts/ClearSansLight.woff") format("woff");
     font-weight: 200;
     font-style: normal;
 }
 
 @font-face {
     font-family: "Clear Sans";
-    src: url("/fonts/ClearSansRegular.woff") format("woff");
+    src: url("{{ROOT}}/fonts/ClearSansRegular.woff") format("woff");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: "Clear Sans";
-    src: url("/fonts/ClearSansBold.woff") format("woff");
+    src: url("{{ROOT}}/fonts/ClearSansBold.woff") format("woff");
     font-weight: 700;
     font-style: normal;
 }

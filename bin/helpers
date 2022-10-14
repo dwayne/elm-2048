@@ -58,6 +58,9 @@ function build_css {
   fi
   sass $args "$project/sass/index.scss" "$dest/index.css"
 
+  # Set the correct path to the font files.
+  sed -i "s|{{ROOT}}|$root|" "$dest/index.css"
+
   echo "Done CSS!"
 }
 

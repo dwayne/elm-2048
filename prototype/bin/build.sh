@@ -2,4 +2,4 @@
 
 cd "$prototype" \
 && sass --embed-sources sass/index.scss index.css \
-&& sed -i s/{{ROOT}}// index.css
+&& sed -i s/{{ROOT}}//g index.css

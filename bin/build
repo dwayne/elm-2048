@@ -1,15 +1,3 @@
 #!/usr/bin/env bash
 
-mkdir -p "$build"
-
-# HTML
-cp "$project/html/index.html" "$build/index.html"
-
-# Assets
-cp -r "$project"/assets/* "$build"
-
-# CSS
-sass --embed-sources "$project/sass/index.scss" "$build/index.css"
-
-# JavaScript
-elm make "$project/src/Main.elm" --debug --output="$build/app.js"
+clean && . helpers && init && build_all

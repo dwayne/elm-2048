@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+#
+# Globals:
+#
+# dest = the directory in which the website will be saved
+# optimize = true if and only the variable is set
+# root = the absolute path from which the website will be served
+#
+
+function init {
+  echo "Initializing..."
+
+  root="${subdir:+/$subdir}"
+  dest="$build$root"
+
+  echo "  the website will be served from ${root:-/} (subdir=name to change)"
+  echo "  the website will be saved in $dest"
+
+  if [[ -v optimize ]]; then
+    echo "  optimization is turned on"
+  else
+    echo "  optimization is turned off (optimize=1 to turn on)"
+  fi
+
+  mkdir -p "$dest"
+
+  echo "Done initializing!"
+}
+
+function build_all {
+  build_html && build_assets && build_css && build_js
+}
+
+function build_html {
+  echo "Building HTML..."
+
+  sed "s|{{ROOT}}|$root|" "$project/html/index.html" > "$dest/index.html"
+
+  echo "Done HTML!"
+}
+
+function build_assets {
+  echo "Building Assets..."
+
+  cp -r "$project"/assets/* "$dest"
+
+  echo "Done Assets!"
+}
+
+function build_css {
+  echo "Building CSS..."
+
+  if [[ -v optimize ]]; then
+    local args="--style=compressed --no-source-map"
+  else
+    local args="--embed-sources"
+  fi
+  sass $args "$project/sass/index.scss" "$dest/index.css"
+
+  echo "Done CSS!"
+}
+
+function build_js {
+  echo "Building JS..."
+
+  local main="$project/src/Main.elm"
+
+  local tmp=$(mktemp -d)
+  local js="$tmp/app.js"
+
+  if [[ -v optimize ]]; then
+    elm make "$main" --optimize --output="$js"
+
+    local min="$tmp/app.min.js"
+
+    uglifyjs "$js" --compress 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9",pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output "$min"
+
+    mv "$min" "$js"
+  else
+    elm make "$main" --debug --output="$js"
+  fi
+
+  cp "$js" "$dest/app.js"
+
+  echo "Done JS!"
+}
+
+function deploy_gh_pages {
+  local branch="gh-pages"
+
+  if git rev-parse --verify "$branch^{commit}" &> /dev/null; then
+    echo "Deploying..."
+
+    local tmp=$(mktemp -d)
+
+    git worktree add "$tmp" "$branch"
+    cp -r "$dest"/* "$tmp"
+    git -C "$tmp" add .
+
+    local hash="$(git log -n 1 --format='%h' master)"
+    local message="Site updated to $hash"
+
+    if git -C "$tmp" commit -m "$message"; then
+      git -C "$tmp" push -u origin HEAD
+    fi
+
+    git worktree remove --force "$tmp"
+
+    echo "Deployed!"
+  else
+    error "Please create a branch named \"$branch\" in order to deploy."
+  fi
+}
+
+function error {
+  printf "Error: %s\n" "$@" >&2
+  exit 1
+}

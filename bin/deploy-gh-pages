@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+subdir=elm-2048
+optimize=1
+
+clean && . helpers && init && build_all && deploy_gh_pages

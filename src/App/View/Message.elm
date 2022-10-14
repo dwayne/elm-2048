@@ -5,47 +5,57 @@ module App.View.Message exposing
 
 
 import App.View.Button as Button
+import App.Lib.Html.Events as HE
 import Html as H
 import Html.Attributes as HA
 
 
 type alias GameOverOptions msg =
-  { onTryAgain : msg
+  { id : String
+  , onTryAgain : msg
+  , onOpen : msg
   }
 
 
 viewGameOver : GameOverOptions msg -> H.Html msg
-viewGameOver { onTryAgain } =
+viewGameOver { id, onTryAgain, onOpen } =
   view
     { isSuccess = False
     , title = "Game over!"
     , buttonOptions =
-        [ { text = "Try again"
+        [ { id = id
+          , text = "Try again"
           , onClick = onTryAgain
           }
         ]
+    , onOpen = onOpen
     }
 
 
 type alias WinOptions msg =
-  { onKeepPlaying : msg
+  { id : String
+  , onKeepPlaying : msg
   , onTryAgain : msg
+  , onOpen : msg
   }
 
 
 viewWin : WinOptions msg -> H.Html msg
-viewWin { onKeepPlaying, onTryAgain } =
+viewWin { id, onKeepPlaying, onTryAgain, onOpen } =
   view
     { isSuccess = True
     , title = "You win!"
     , buttonOptions =
-        [ { text = "Keep going"
+        [ { id = id
+          , text = "Keep going"
           , onClick = onKeepPlaying
           }
-        , { text = "Try again"
+        , { id = ""
+          , text = "Try again"
           , onClick = onTryAgain
           }
         ]
+    , onOpen = onOpen
     }
 
 
@@ -53,16 +63,18 @@ type alias Options msg =
   { isSuccess : Bool
   , title : String
   , buttonOptions : List (Button.Options msg)
+  , onOpen : msg
   }
 
 
 view : Options msg -> H.Html msg
-view { isSuccess, title, buttonOptions } =
+view { isSuccess, title, buttonOptions, onOpen } =
   H.div
     [ HA.class "message"
     , HA.classList
         [ ("message--success", isSuccess)
         ]
+    , HE.onAnimationStart onOpen
     ]
     [ H.h2 [ HA.class "message__title" ] [ H.text title ]
     , H.div [ HA.class "message__buttons" ] <|

@@ -15,18 +15,12 @@
 
   background-color: colors.$squirrel;
   color: colors.$floralWhite1;
-
-  will-change: transform;
 }
 
 .button:hover {
   background-color: color.adjust(colors.$squirrel, $lightness: 5%);
 }
 
-.button:active {
-  transform: scale(0.95);
-}
-
-.button:focus-visible {
-  outline: 0;
+.button:focus {
+  outline: 2px solid color.scale(colors.$squirrel, $blackness: 25%);
 }

@@ -17,7 +17,8 @@ view onNewGame =
         ]
     , H.div [ HA.class "introduction__button" ]
         [ Button.view
-            { text = "New Game"
+            { id = ""
+            , text = "New Game"
             , onClick = onNewGame
             }
         ]

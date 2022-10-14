@@ -6,6 +6,7 @@ module App.View.Score exposing
 
 
 import App.Data.Points as Points exposing (Points)
+import App.Lib.Html.Events as HE
 import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
@@ -97,15 +98,10 @@ viewScoreDelta (id, points) =
   ( String.fromInt id
   , H.div
       [ HA.class "score__delta"
-      , onAnimationEnd AnimationEnded
+      , HE.onAnimationEnd AnimationEnded
       ]
       [ H.text <| "+" ++ Points.toString points ]
   )
-
-
-onAnimationEnd : msg -> H.Attribute msg
-onAnimationEnd msg =
-  HE.on "animationend" <| JD.succeed msg
 
 
 viewReadOnly : String -> Points -> H.Html msg

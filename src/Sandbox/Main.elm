@@ -250,7 +250,11 @@ viewGameOverMessage =
   H.div []
     [ H.h2 [] [ H.text "Game Over Message" ]
     , viewMessage <|
-        Message.viewGameOver { onTryAgain = NoOp }
+        Message.viewGameOver
+          { id = ""
+          , onTryAgain = NoOp
+          , onOpen = NoOp
+          }
     ]
 
 
@@ -259,7 +263,12 @@ viewWinMessage =
   H.div []
     [ H.h2 [] [ H.text "Win Message" ]
     , viewMessage <|
-      Message.viewWin { onKeepPlaying = NoOp, onTryAgain = NoOp }
+      Message.viewWin
+        { id = ""
+        , onKeepPlaying = NoOp
+        , onTryAgain = NoOp
+        , onOpen = NoOp
+        }
     ]
 
 
@@ -303,14 +312,23 @@ viewGrid =
           }
     , H.h3 [] [ H.text "Example 2" ]
     , Grid.view
-        (Grid.GameOverMessage { onTryAgain = NoOp })
+        (Grid.GameOverMessage
+          { id = "tryAgain"
+          , onTryAgain = NoOp
+          , onOpen = NoOp
+          })
         (Grid.init
           { tiles = []
           , moveDuration = moveDuration
           })
     , H.h3 [] [ H.text "Example 3" ]
     , Grid.view
-        (Grid.WinMessage { onKeepPlaying = NoOp, onTryAgain = NoOp })
+        (Grid.WinMessage
+          { id = "keepPlaying"
+          , onKeepPlaying = NoOp
+          , onTryAgain = NoOp
+          , onOpen = NoOp
+          })
         (Grid.init
           { tiles = []
           , moveDuration = moveDuration

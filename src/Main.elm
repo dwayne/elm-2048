@@ -28,8 +28,11 @@ main =
 -- CONSTANTS
 
 
-mainViewId : String
-mainViewId = "main"
+htmlIds =
+  { mainView = "main"
+  , tryAgain = "tryAgain"
+  , keepPlaying = "keepPlaying"
+  }
 
 
 -- MODEL
@@ -55,7 +58,7 @@ init value =
     , mainViewState = MainView.init
     }
   , Cmd.batch
-      [ focus mainViewId
+      [ focus htmlIds.mainView
       , Cmd.map ChangedGame cmd
       ]
   )
@@ -69,6 +72,8 @@ type Msg
   | ClickedNewGame
   | ClickedKeepPlaying
   | Moved Game.Direction
+  | OpenedWinMessage
+  | OpenedGameOverMessage
   | ChangedGame Game.Msg
   | ChangedScoreCard ScoreCard.Msg
   | ChangedGrid Grid.Msg
@@ -90,7 +95,7 @@ update msg model =
       in
       ( { model | game = game, gridState = toGridState game }
       , Cmd.batch
-          [ focus mainViewId
+          [ focus htmlIds.mainView
           , Port.save game
           , Cmd.map ChangedGame cmd
           ]
@@ -103,7 +108,7 @@ update msg model =
       in
       ( { model | game = game }
       , Cmd.batch
-          [ focus mainViewId
+          [ focus htmlIds.mainView
           , Port.save game
           ]
       )
@@ -138,6 +143,16 @@ update msg model =
               , Cmd.map ChangedGame cmd
               ]
           )
+
+    OpenedWinMessage ->
+      ( model
+      , focus htmlIds.keepPlaying
+      )
+
+    OpenedGameOverMessage ->
+      ( model
+      , focus htmlIds.tryAgain
+      )
 
     ChangedGame gameMsg ->
       let
@@ -198,7 +213,7 @@ view { game, scoreCardState, gridState } =
       Game.toState game
   in
   MainView.view
-    { id = mainViewId
+    { id = htmlIds.mainView
     , header =
         { reckoning = Tally.toReckoning tally
         , state = scoreCardState
@@ -211,13 +226,17 @@ view { game, scoreCardState, gridState } =
 
           Game.Win ->
             Grid.WinMessage
-              { onKeepPlaying = ClickedKeepPlaying
+              { id = htmlIds.keepPlaying
+              , onKeepPlaying = ClickedKeepPlaying
               , onTryAgain = ClickedNewGame
+              , onOpen = OpenedWinMessage
               }
 
           Game.GameOver ->
             Grid.GameOverMessage
-              { onTryAgain = ClickedNewGame
+              { id = htmlIds.tryAgain
+              , onTryAgain = ClickedNewGame
+              , onOpen = OpenedGameOverMessage
               }
 
           Game.KeepPlaying ->

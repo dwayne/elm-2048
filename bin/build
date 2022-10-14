@@ -6,7 +6,7 @@ mkdir -p "$build"
 cp "$project/html/index.html" "$build/index.html"
 
 # Assets
-cp -r "$project/assets/fonts" "$build"
+cp -r "$project"/assets/* "$build"
 
 # CSS
 sass --embed-sources "$project/sass/index.scss" "$build/index.css"

@@ -1,15 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Elm 2048</title>
+    <link rel="shortcut icon" href="/elm-2048/favicon.ico">
+
+    <title>2048</title>
+    <link rel="stylesheet" href="/elm-2048/index.css">
   </head>
-  <body>
-    <script src="2048.js"></script>
+  <body class="body">
+    <div id="app"></div>
+    <script src="/elm-2048/app.js"></script>
     <script>
-      Elm.Game.fullscreen();
+      const key = "elm-2048-state";
+      const value = localStorage.getItem(key);
+
+      let savedState = null;
+      if (value) {
+        try {
+          savedState = JSON.parse(value);
+        } catch (error) {
+          console.error("The game state seems to be corrupted. We will have to start a new game.");
+          console.error(error);
+        }
+      }
+
+      const app = Elm.Main.init({
+        node: document.getElementById("app"),
+        flags: savedState
+      });
+
+      app.ports.send.subscribe(message => {
+        if (message.tag === "save") {
+          localStorage.setItem(key, JSON.stringify(message.payload));
+        }
+      });
     </script>
   </body>
 </html>

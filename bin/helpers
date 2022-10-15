@@ -28,6 +28,12 @@ function init {
   echo "Done initializing!"
 }
 
+function check_format {
+  tmp=$(mktemp)
+  elm-format --validate $(find "$project/src" -name *.elm ! -path "$project/src/Sandbox/*") > "$tmp" \
+  || (cat "$tmp" && error "Please format the listed Elm files in order to proceed with the build.")
+}
+
 function build_all {
   build_html && build_assets && build_css && build_js
 }

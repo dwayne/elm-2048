@@ -6,6 +6,7 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.caddy
     pkgs.elmPackages.elm
+    pkgs.elmPackages.elm-format
     pkgs.elmPackages.elm-test
     pkgs.nodePackages.sass
     pkgs.nodePackages.uglify-js

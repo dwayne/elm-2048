@@ -10,7 +10,7 @@ pkgs.mkShell {
     pkgs.elmPackages.elm-review
     pkgs.elmPackages.elm-test
     pkgs.nodePackages.sass
-    pkgs.nodePackages.uglify-js
+    pkgs.nodePackages.terser
   ];
 
   shellHook =

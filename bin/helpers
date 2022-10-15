@@ -84,7 +84,16 @@ function build_js {
   local js="$tmp/app.js"
 
   if [[ -v optimize ]]; then
-    elm make "$main" --optimize --output="$js"
+    if [[ optimize -eq 2 ]]; then
+      echo "  using elm-optimize-level-2"
+      elm-optimize-level-2 "$main" --output="$js"
+    elif [[ optimize -eq 3 ]]; then
+      echo "  using elm-optimize-level-2 with the --optimize-speed flag"
+      elm-optimize-level-2 "$main" --optimize-speed --output="$js"
+    else
+      echo "  using elm make with the --optimize flag"
+      elm make "$main" --optimize --output="$js"
+    fi
 
     local min="$tmp/app.min.js"
 

@@ -34,6 +34,11 @@ function check_format {
   || (cat "$tmp" && error "Please format the listed Elm files in order to proceed with the build.")
 }
 
+function review {
+  tmp=$(mktemp)
+  elm-review > "$tmp" || (cat "$tmp" && exit 1)
+}
+
 function build_all {
   build_html && build_assets && build_css && build_js
 }

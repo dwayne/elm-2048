@@ -1,6 +1,5 @@
 module App.View.Header exposing (Options, view)
 
-import App.Data.Points exposing (Points)
 import App.Data.Tally exposing (Reckoning)
 import App.View.ScoreCard as ScoreCard
 import App.View.Title as Title

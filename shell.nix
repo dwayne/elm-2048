@@ -7,6 +7,7 @@ pkgs.mkShell {
     pkgs.caddy
     pkgs.elmPackages.elm
     pkgs.elmPackages.elm-format
+    pkgs.elmPackages.elm-review
     pkgs.elmPackages.elm-test
     pkgs.nodePackages.sass
     pkgs.nodePackages.uglify-js

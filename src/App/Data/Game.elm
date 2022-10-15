@@ -5,14 +5,12 @@ module App.Data.Game exposing
     , Outcome(..)
     , State
     , Status(..)
-    , decoder
     , encode
     , getGrid
     , keepPlaying
     , load
     , move
     , new
-    , start
     , toState
     , update
     )
@@ -47,62 +45,18 @@ type Msg
     = InsertedTiles (Maybe Grid)
 
 
-start : ( Game, Cmd Msg )
-start =
-    let
-        grid =
-            Grid.empty
-    in
-    ( Game
-        { status = Playing
-        , tally = Tally.zero
-        , grid = grid
-        }
-    , insertAtMost2Tiles grid
-    )
-
-
 new : Game -> ( Game, Cmd Msg )
-new (Game state) =
-    let
-        grid =
-            Grid.reset state.grid
-    in
-    ( Game
-        { status = Playing
-        , tally = Tally.resetCurrent state.tally
-        , grid = grid
-        }
-    , insertAtMost2Tiles grid
-    )
+new (Game { tally, grid }) =
+    start (Just tally) (Just grid)
 
 
 load : JE.Value -> ( Game, Cmd Msg )
 load value =
-    let
-        startOver tally =
-            -- NOTE:
-            -- 1. It is similar to start but we keep the best score.
-            -- 2. It is similar to new but we use an empty grid.
-            let
-                grid =
-                    Grid.empty
-
-                -- Use an empty grid
-            in
-            ( Game
-                { status = Playing
-                , tally = Tally.resetCurrent tally -- Keep the best score
-                , grid = grid
-                }
-            , insertAtMost2Tiles grid
-            )
-    in
     case JD.decodeValue decoder value of
         Ok ((Game { status, tally, grid }) as game) ->
             case status of
                 GameOver ->
-                    startOver tally
+                    start (Just tally) Nothing
 
                 Playing ->
                     let
@@ -116,7 +70,7 @@ load value =
                         -- NOTE:
                         -- We do this so that when the user refreshes the page
                         -- it behaves as though they clicked the New Game button.
-                        startOver tally
+                        start (Just tally) Nothing
 
                     else
                         ( game, Cmd.none )
@@ -125,7 +79,33 @@ load value =
                     ( game, Cmd.none )
 
         Err _ ->
-            start
+            start Nothing Nothing
+
+
+start : Maybe Tally -> Maybe Grid -> ( Game, Cmd Msg )
+start maybeTally maybeGrid =
+    let
+        grid =
+            case maybeGrid of
+                Nothing ->
+                    Grid.empty
+
+                Just grid_ ->
+                    Grid.reset grid_
+    in
+    ( Game
+        { status = Playing
+        , tally =
+            case maybeTally of
+                Nothing ->
+                    Tally.zero
+
+                Just tally ->
+                    Tally.resetCurrent tally
+        , grid = grid
+        }
+    , insertAtMost2Tiles grid
+    )
 
 
 keepPlaying : Game -> Game
@@ -153,14 +133,14 @@ type Outcome
 
 
 move : Direction -> Game -> ( Outcome, Cmd Msg )
-move direction ((Game state) as game) =
+move direction (Game state) =
     case Grid.move direction state.grid of
         Just grid ->
-            let
-                points =
-                    Grid.toPoints grid
-            in
             if state.status == Playing || state.status == KeepPlaying then
+                let
+                    points =
+                        Grid.toPoints grid
+                in
                 ( if Points.isZero points then
                     NoPoints <|
                         Game { state | grid = grid }
@@ -169,8 +149,8 @@ move direction ((Game state) as game) =
                     EarnedPoints points <|
                         Game
                             { state
-                                | grid = grid
-                                , tally = Tally.addPoints points state.tally
+                                | tally = Tally.addPoints points state.tally
+                                , grid = grid
                             }
                 , insertAtMost2Tiles grid
                 )

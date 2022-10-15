@@ -5,7 +5,7 @@ import Expect
 import Fuzz
 import Random
 import Set
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz, test)
 
 
 suite : Test

@@ -10,7 +10,6 @@ import Browser
 import Browser.Dom as BD
 import Html as H
 import Json.Encode as JE
-import Random
 import Task
 
 
@@ -28,6 +27,11 @@ main =
 -- CONSTANTS
 
 
+htmlIds :
+    { mainView : String
+    , tryAgain : String
+    , keepPlaying : String
+    }
 htmlIds =
     { mainView = "main"
     , tryAgain = "tryAgain"

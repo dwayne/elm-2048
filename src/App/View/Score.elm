@@ -12,9 +12,7 @@ import App.Data.Points as Points exposing (Points)
 import App.Lib.Html.Events as HE
 import Html as H
 import Html.Attributes as HA
-import Html.Events as HE
 import Html.Keyed as HK
-import Json.Decode as JD
 
 
 

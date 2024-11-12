@@ -38,7 +38,7 @@ type alias Model =
     { points : Points
     , scoreState : Score.State
     , tally : Tally
-    , scoreCardState : ScoreCard.State
+    , scoreCardState : Score.State
     }
 
 
@@ -47,7 +47,7 @@ init _ =
     ( { points = Points.zero
       , scoreState = Score.init
       , tally = Tally.zero
-      , scoreCardState = ScoreCard.init
+      , scoreCardState = Score.init
       }
     , Cmd.none
     )
@@ -67,7 +67,7 @@ type Msg
     | ClickedReset
     | ClickedAddPoints2
     | GotPoints2 Points
-    | ChangedScoreCard ScoreCard.Msg
+    | ChangedScoreCard Score.Msg
       -- Introduction
     | ClickedNewGame
 
@@ -111,14 +111,14 @@ update msg model =
         GotPoints2 points ->
             ( { model
                 | tally = Tally.addPoints points model.tally
-                , scoreCardState = ScoreCard.addPoints points model.scoreCardState
+                , scoreCardState = Score.addPoints points model.scoreCardState
               }
             , Cmd.none
             )
 
         ChangedScoreCard scoreCardMsg ->
             ( { model
-                | scoreCardState = ScoreCard.update scoreCardMsg model.scoreCardState
+                | scoreCardState = Score.update scoreCardMsg model.scoreCardState
               }
             , Cmd.none
             )
@@ -186,8 +186,11 @@ viewScore points state =
         [ H.h2 [] [ H.text "Score" ]
         , H.div []
             [ H.p []
-                [ Score.viewCurrent points state
-                    |> H.map ChangedCurrentScore
+                [ Score.viewCurrent
+                    { points = points
+                    , state = state
+                    , onChange = ChangedCurrentScore
+                    }
                 ]
             , H.button [ HE.onClick ClickedAddPoints1 ] [ H.text "Add points" ]
             ]
@@ -196,12 +199,20 @@ viewScore points state =
         ]
 
 
-viewScoreCard : Tally -> ScoreCard.State -> H.Html Msg
+viewScoreCard : Tally -> Score.State -> H.Html Msg
 viewScoreCard tally state =
     H.div []
         [ H.h2 [] [ H.text "Score Card" ]
-        , ScoreCard.view (Tally.toReckoning tally) state
-            |> H.map ChangedScoreCard
+        , let
+            { current, best } =
+                Tally.toReckoning tally
+          in
+          ScoreCard.view
+            { current = current
+            , best = best
+            , state = state
+            , onChange = ChangedScoreCard
+            }
         , H.p []
             [ H.button [ HE.onClick ClickedReset ] [ H.text "Reset" ]
             , H.text " "
@@ -210,7 +221,7 @@ viewScoreCard tally state =
         ]
 
 
-viewHeader : Tally -> ScoreCard.State -> H.Html Msg
+viewHeader : Tally -> Score.State -> H.Html Msg
 viewHeader tally state =
     H.div []
         [ H.h2 [] [ H.text "Header" ]
@@ -218,8 +229,13 @@ viewHeader tally state =
             [ HA.style "min-width" "280px"
             , HA.style "max-width" "500px"
             ]
-            [ Header.view
-                { reckoning = Tally.toReckoning tally
+            [ let
+                { current, best } =
+                    Tally.toReckoning tally
+              in
+              Header.view
+                { current = current
+                , best = best
                 , state = state
                 , onChange = ChangedScoreCard
                 }

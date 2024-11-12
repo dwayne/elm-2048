@@ -5,7 +5,7 @@ import App.Data.Tally as Tally
 import App.Port as Port
 import App.View.Grid as Grid
 import App.View.Main as MainView
-import App.View.ScoreCard as ScoreCard
+import App.View.Score as Score
 import Browser
 import Browser.Dom as BD
 import Html as H
@@ -45,7 +45,7 @@ htmlIds =
 
 type alias Model =
     { game : Game
-    , scoreCardState : ScoreCard.State
+    , scoreState : Score.State
     , gridState : Grid.State
     , mainViewState : MainView.State
     }
@@ -58,7 +58,7 @@ init value =
             Game.load value
     in
     ( { game = game
-      , scoreCardState = ScoreCard.init
+      , scoreState = Score.init
       , gridState = toGridState game
       , mainViewState = MainView.init
       }
@@ -81,7 +81,7 @@ type Msg
     | OpenedWinMessage
     | OpenedGameOverMessage
     | ChangedGame Game.Msg
-    | ChangedScoreCard ScoreCard.Msg
+    | ChangedScore Score.Msg
     | ChangedGrid Grid.Msg
     | ChangedMainView MainView.Msg
 
@@ -141,7 +141,7 @@ update msg model =
                 Game.EarnedPoints points game ->
                     ( { model
                         | game = game
-                        , scoreCardState = ScoreCard.addPoints points model.scoreCardState
+                        , scoreState = Score.addPoints points model.scoreState
                         , gridState = toGridState game
                       }
                     , Cmd.batch
@@ -169,9 +169,9 @@ update msg model =
             , Port.save game
             )
 
-        ChangedScoreCard scoreCardMsg ->
+        ChangedScore scoreMsg ->
             ( { model
-                | scoreCardState = ScoreCard.update scoreCardMsg model.scoreCardState
+                | scoreState = Score.update scoreMsg model.scoreState
               }
             , Cmd.none
             )
@@ -215,17 +215,21 @@ subscriptions _ =
 
 
 view : Model -> H.Html Msg
-view { game, scoreCardState, gridState } =
+view { game, scoreState, gridState } =
     let
         { status, tally } =
             Game.toState game
+
+        { current, best } =
+            Tally.toReckoning tally
     in
     MainView.view
         { id = htmlIds.mainView
         , header =
-            { reckoning = Tally.toReckoning tally
-            , state = scoreCardState
-            , onChange = ChangedScoreCard
+            { current = current
+            , best = best
+            , state = scoreState
+            , onChange = ChangedScore
             }
         , message =
             case status of

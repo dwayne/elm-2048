@@ -1,62 +1,28 @@
-module App.View.ScoreCard exposing
-    ( Msg
-    , State
-    , addPoints
-    , init
-    , update
-    , view
-    )
+module App.View.ScoreCard exposing (ViewOptions, view)
 
 import App.Data.Points exposing (Points)
-import App.Data.Tally exposing (Reckoning)
 import App.View.Score as Score
 import Html as H
 import Html.Attributes as HA
 
 
-
--- STATE
-
-
-type State
-    = State Score.State
-
-
-init : State
-init =
-    State Score.init
+type alias ViewOptions msg =
+    { current : Points
+    , best : Points
+    , state : Score.State
+    , onChange : Score.Msg -> msg
+    }
 
 
-addPoints : Points -> State -> State
-addPoints points (State state) =
-    State <| Score.addPoints points state
-
-
-
--- UPDATE
-
-
-type Msg
-    = ChangedCurrentScore Score.Msg
-
-
-update : Msg -> State -> State
-update msg (State state) =
-    case msg of
-        ChangedCurrentScore scoreMsg ->
-            State <| Score.update scoreMsg state
-
-
-
--- VIEW
-
-
-view : Reckoning -> State -> H.Html Msg
-view { current, best } (State state) =
+view : ViewOptions msg -> H.Html msg
+view { current, best, state, onChange } =
     H.div [ HA.class "score-card" ]
         [ H.div [ HA.class "score-card__score" ]
-            [ Score.viewCurrent current state
-                |> H.map ChangedCurrentScore
+            [ Score.viewCurrent
+                { points = current
+                , state = state
+                , onChange = onChange
+                }
             ]
         , H.div [ HA.class "score-card__score" ] [ Score.viewBest best ]
         ]

@@ -1,6 +1,7 @@
 module App.View.Score exposing
     ( Msg
     , State
+    , ViewCurrentOptions
     , addPoints
     , init
     , update
@@ -62,21 +63,57 @@ update msg (State state) =
 
 
 
--- VIEW
+-- VIEW SHORTCUTS
 
 
-viewCurrent : Points -> State -> H.Html Msg
-viewCurrent =
-    view "Score"
+type alias ViewCurrentOptions msg =
+    { points : Points
+    , state : State
+    , onChange : Msg -> msg
+    }
+
+
+viewCurrent : ViewCurrentOptions msg -> H.Html msg
+viewCurrent { points, state, onChange } =
+    view
+        { title = "Score"
+        , points = points
+        , maybeDynamic =
+            Just
+                { state = state
+                , onChange = onChange
+                }
+        }
 
 
 viewBest : Points -> H.Html msg
-viewBest =
-    viewReadOnly "Best"
+viewBest points =
+    view
+        { title = "Best"
+        , points = points
+        , maybeDynamic = Nothing
+        }
 
 
-view : String -> Points -> State -> H.Html Msg
-view title points (State { deltas }) =
+
+-- VIEW
+
+
+type alias ViewOptions msg =
+    { title : String
+    , points : Points
+    , maybeDynamic : Maybe (Dynamic msg)
+    }
+
+
+type alias Dynamic msg =
+    { state : State
+    , onChange : Msg -> msg
+    }
+
+
+view : ViewOptions msg -> H.Html msg
+view { title, points, maybeDynamic } =
     let
         ( pointsAsString, scoreNDigit ) =
             pointsToDetails points
@@ -84,42 +121,35 @@ view title points (State { deltas }) =
     H.div [ HA.class "score", scoreNDigit ]
         [ H.h2 [ HA.class "score__title" ] [ H.text title ]
         , let
-            scoreValue =
-                ( "score__value"
-                , H.div [ HA.class "score__value" ] [ H.text pointsAsString ]
-                )
-
-            scoreDeltas =
-                List.map viewScoreDelta deltas
+            viewScoreValue =
+                H.div [ HA.class "score__value" ] [ H.text pointsAsString ]
           in
-          HK.node "div" [ HA.class "score__total" ] <|
-            scoreValue
-                :: scoreDeltas
+          case maybeDynamic of
+            Nothing ->
+                H.div [ HA.class "score__total" ] [ viewScoreValue ]
+
+            Just { state, onChange } ->
+                let
+                    viewScoreDeltas =
+                        case state of
+                            State { deltas } ->
+                                List.map (viewScoreDelta <| onChange AnimationEnded) deltas
+                in
+                HK.node "div" [ HA.class "score__total" ] <|
+                    ( "score__value", viewScoreValue )
+                        :: viewScoreDeltas
         ]
 
 
-viewScoreDelta : ( Int, Points ) -> ( String, H.Html Msg )
-viewScoreDelta ( id, points ) =
+viewScoreDelta : msg -> ( Int, Points ) -> ( String, H.Html msg )
+viewScoreDelta msg ( id, points ) =
     ( String.fromInt id
     , H.div
         [ HA.class "score__delta"
-        , HE.onAnimationEnd AnimationEnded
+        , HE.onAnimationEnd msg
         ]
         [ H.text <| "+" ++ Points.toString points ]
     )
-
-
-viewReadOnly : String -> Points -> H.Html msg
-viewReadOnly title points =
-    let
-        ( pointsAsString, scoreNDigit ) =
-            pointsToDetails points
-    in
-    H.div [ HA.class "score", scoreNDigit ]
-        [ H.h2 [ HA.class "score__title" ] [ H.text title ]
-        , H.div [ HA.class "score__total" ]
-            [ H.div [ HA.class "score__value" ] [ H.text pointsAsString ] ]
-        ]
 
 
 pointsToDetails : Points -> ( String, H.Attribute msg )

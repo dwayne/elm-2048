@@ -1,25 +1,18 @@
-module App.View.Header exposing (Options, view)
+module App.View.Header exposing (ViewOptions, view)
 
-import App.Data.Tally exposing (Reckoning)
 import App.View.ScoreCard as ScoreCard
 import App.View.Title as Title
 import Html as H
 import Html.Attributes as HA
 
 
-type alias Options msg =
-    { reckoning : Reckoning
-    , state : ScoreCard.State
-    , onChange : ScoreCard.Msg -> msg
-    }
+type alias ViewOptions msg =
+    ScoreCard.ViewOptions msg
 
 
-view : Options msg -> H.Html msg
-view { reckoning, state, onChange } =
+view : ViewOptions msg -> H.Html msg
+view options =
     H.header [ HA.class "header" ]
         [ H.div [ HA.class "header__title" ] [ Title.view ]
-        , H.div [ HA.class "header__score-card" ]
-            [ ScoreCard.view reckoning state
-                |> H.map onChange
-            ]
+        , H.div [ HA.class "header__score-card" ] [ ScoreCard.view options ]
         ]
